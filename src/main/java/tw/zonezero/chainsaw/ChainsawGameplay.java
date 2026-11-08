@@ -52,10 +52,13 @@ public final class ChainsawGameplay {
             return;
         }
         InputState input = INPUTS.computeIfAbsent(player.getUUID(), id -> new InputState());
-        if (!input.lastSaw.isEmpty() && input.lastSaw != saw) {
-            // Item switch before the next server tick MUST not leave the
-            // previously held saw in an independently running state.
-            ZoneZeroChainsaw.clearRuntimeState(input.lastSaw);
+        if (input.lastSaw != saw) {
+            // A restored saw from a chest/login/another slot must never be
+            // considered running before a fresh successful R command.
+            // This also closes an input-packet-before-next-tick race.
+            if (!input.lastSaw.isEmpty())
+                ZoneZeroChainsaw.clearRuntimeState(input.lastSaw);
+            ZoneZeroChainsaw.clearRuntimeState(saw);
             resetCutInput(input);
             input.lastToggleAt = -1000;
         }
@@ -279,22 +282,25 @@ public final class ChainsawGameplay {
 
     @SubscribeEvent
     public static void login(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
-        INPUTS.remove(event.getEntity().getUUID());
-        clearInventoryRuntime(event.getEntity());
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        INPUTS.remove(player.getUUID());
+        clearInventoryRuntime(player);
     }
 
     @SubscribeEvent
     public static void respawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent event) {
-        INPUTS.remove(event.getEntity().getUUID());
-        clearInventoryRuntime(event.getEntity());
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        INPUTS.remove(player.getUUID());
+        clearInventoryRuntime(player);
     }
 
     @SubscribeEvent
     public static void logout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
-        InputState state = INPUTS.remove(event.getEntity().getUUID());
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        InputState state = INPUTS.remove(player.getUUID());
         if (state != null && state.lastSaw.is(ZoneZeroChainsaw.CHAINSAW.get()))
             ZoneZeroChainsaw.clearRuntimeState(state.lastSaw);
-        clearInventoryRuntime(event.getEntity());
+        clearInventoryRuntime(player);
     }
 
     private static LivingEntity findTarget(ServerPlayer player) {

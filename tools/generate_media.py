@@ -14,6 +14,7 @@ import zlib
 
 from generate_chainsaw_art import generate as generate_original_textures
 from generate_chainsaw_hud import generate as generate_original_hud
+from generate_chain_motion import generate as generate_chain_motion
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "src/main/resources/assets/zonezero_chainsaw"
@@ -137,7 +138,8 @@ def texture():
 
 if __name__ == "__main__":
     audio()
-    texture()
+    texture()  # Keeps legacy chain_coast.png available for older asset references.
+    generate_chain_motion(TEXTURES)  # Replaces running atlas with 8 original moving frames.
     generate_original_textures(TEXTURES)
     generate_original_hud(ROOT / 'textures/gui')
-    print("Generated original OGG effects, animated chain textures, 24 mechanical materials and two original HUD guide bars.")
+    print("Generated original OGG effects, animated chain textures, 24 mechanical materials, two guide HUDs and 12 directional 8-frame chain atlases.")

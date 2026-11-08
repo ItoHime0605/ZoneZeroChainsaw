@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 
 /**
  * Use a fuel can in one hand and the chainsaw in the other to refill.
- * A can contains 600 cutting units; partially filled tanks never waste fuel.
+ * A can contains 600 cutting units; refilling requires room for a full 600-unit can to avoid wasting fuel.
  */
 public final class BiofuelCanItem extends Item {
     public BiofuelCanItem(Properties properties) {
@@ -21,7 +21,7 @@ public final class BiofuelCanItem extends Item {
         ItemStack can = player.getItemInHand(hand);
         ItemStack other = player.getItemInHand(hand == InteractionHand.MAIN_HAND
                 ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
-        if (!other.is(ZoneZeroChainsaw.CHAINSAW.get()) || ZoneZeroChainsaw.fuel(other) >= 1800) {
+        if (!other.is(ZoneZeroChainsaw.CHAINSAW.get()) || ZoneZeroChainsaw.fuel(other) > 1200) {
             return InteractionResultHolder.pass(can);
         }
         if (!level.isClientSide) {

@@ -2,77 +2,68 @@ package tw.zonezero.chainsaw;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import tw.zonezero.chainsaw.logic.ChainsawHudStyle;
 
 /**
- * Original compact pixel guide-bar gauge.
- * Off: cool grey. Running: red. Fuel value only: e.g. 300/600.
- * No text panels, TaCZ resource copies, or extra status banners.
+ * Original, transparent guide-bar gauge: the only state-dependent visual
+ * is its silver/red blade image. Fuel digits ALWAYS use the same ivory-white
+ * color and cool slate outline (even at zero fuel and with the engine on).
+ * No TaCZ assets, oversized black panels, animation shaders or custom fonts.
  */
 @EventBusSubscriber(modid = ZoneZeroChainsaw.MODID, value = Dist.CLIENT)
 public final class ChainsawHud {
-    private ChainsawHud() {}
+    private static final ResourceLocation BAR_IDLE = ResourceLocation.fromNamespaceAndPath(
+            ZoneZeroChainsaw.MODID, "textures/gui/guide_idle.png");
+    private static final ResourceLocation BAR_RUNNING = ResourceLocation.fromNamespaceAndPath(
+            ZoneZeroChainsaw.MODID, "textures/gui/guide_running.png");
 
-    private static void stroke(GuiGraphics g, int x, int y, int w, int h, int color) {
-        g.fill(x, y, x + w, y + h, color);
-    }
+    private ChainsawHud() {}
 
     @SubscribeEvent
     public static void afterHud(RenderGuiEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.screen != null || mc.options.hideGui || mc.player.isSpectator()) return;
+        if (mc.player == null || mc.screen != null || mc.options.hideGui ||
+                mc.player.isSpectator()) return;
         ItemStack saw = mc.player.getMainHandItem();
         if (!saw.is(ZoneZeroChainsaw.CHAINSAW.get())) return;
+
         GuiGraphics g = event.getGuiGraphics();
-        int x = g.guiWidth() - 157;
-        int y = g.guiHeight() - 52;
-        if (x < 3 || y < 3) return;
+        if (g.guiWidth() < ChainsawHudStyle.TOTAL_WIDTH + 8 ||
+                g.guiHeight() < ChainsawHudStyle.HEIGHT + 50) return;
+        int x = g.guiWidth() - ChainsawHudStyle.TOTAL_WIDTH - 9;
+        int y = g.guiHeight() - ChainsawHudStyle.HEIGHT - 17;
 
-        boolean running = ZoneZeroChainsaw.isEngineOn(saw) && mc.player.getOffhandItem().isEmpty();
-        int edge = running ? 0xffed4847 : 0xffc1c9ca;
-        int highlight = running ? 0xffff8b7c : 0xffecf0e8;
-        int shade = running ? 0xff922826 : 0xff657277;
+        boolean running = ZoneZeroChainsaw.isEngineOn(saw)
+                && mc.player.getOffhandItem().isEmpty()
+                && ZoneZeroChainsaw.fuel(saw) > 0;
 
-        // Light shadow to keep thin guide-bar lines visible over day or night.
-        stroke(g, x + 5, y + 6, 82, 23, 0x440e1316);
+        // Engine state affects only which ORIGINAL blade artwork is rendered.
+        ResourceLocation bar = running ? BAR_RUNNING : BAR_IDLE;
+        g.blit(bar, x, y, 0, 0,
+                ChainsawHudStyle.BAR_WIDTH, ChainsawHudStyle.HEIGHT,
+                ChainsawHudStyle.BAR_WIDTH, ChainsawHudStyle.HEIGHT);
 
-        // Outer saw bar: a flat-sided, pixel-chamfered nose pointing left.
-        stroke(g, x + 12, y + 4, 75, 3, edge);
-        stroke(g, x + 7, y + 7, 5, 3, edge);
-        stroke(g, x + 4, y + 10, 3, 13, edge);
-        stroke(g, x + 7, y + 23, 5, 3, edge);
-        stroke(g, x + 12, y + 26, 75, 3, edge);
-        stroke(g, x + 84, y + 7, 3, 19, shade);
-
-        // Distinct recessed center of the guide bar, not a fuel progress bar.
-        stroke(g, x + 22, y + 11, 61, 2, highlight);
-        stroke(g, x + 16, y + 13, 6, 3, highlight);
-        stroke(g, x + 14, y + 16, 3, 3, shade);
-        stroke(g, x + 16, y + 19, 6, 3, shade);
-        stroke(g, x + 22, y + 22, 61, 2, shade);
-        stroke(g, x + 82, y + 13, 2, 9, shade);
-
-        // Seven tiny teeth on each longitudinal side, plus sprocket teeth at the nose.
-        for (int i = 0; i < 7; i++) {
-            int tx = x + 15 + i * 10;
-            stroke(g, tx, y + 1, 3, 3, i % 2 == 0 ? shade : edge);
-            stroke(g, tx + 2, y + 29, 3, 3, i % 2 == 0 ? edge : shade);
-        }
-        stroke(g, x + 1, y + 12, 3, 4, edge);
-        stroke(g, x + 1, y + 19, 3, 4, shade);
-
-        // Single numerical readout. It follows the real ItemStack tank capacity.
-        int fuel = ZoneZeroChainsaw.fuel(saw);
-        int max = ZoneZeroChainsaw.fuelCapacity(saw);
-        String counter = fuel + "/" + max;
+        // A single fixed-color fuel value. Not a separate percentage bar.
+        String digits = ZoneZeroChainsaw.fuel(saw) + "/" + ZoneZeroChainsaw.fuelCapacity(saw);
+        int tx = x + ChainsawHudStyle.BAR_WIDTH + 7;
+        int ty = y + 15;
         g.pose().pushPose();
-        g.pose().translate(x + 94, y + 12, 0);
-        g.pose().scale(1.08f, 1.08f, 1.0f);
-        g.drawString(mc.font, counter, 0, 0, running ? 0xffffdddd : 0xfff1f2ee, true);
+        g.pose().translate(tx, ty, 0.0f);
+        g.pose().scale(ChainsawHudStyle.TEXT_SCALE, ChainsawHudStyle.TEXT_SCALE, 1.0f);
+
+        // Four-pixel slate outline gives stable contrast on snow, sunlight,
+        // night, dark grass and shader scenes without a black background.
+        g.drawString(mc.font, digits, -1, 0, ChainsawHudStyle.TEXT_OUTLINE, false);
+        g.drawString(mc.font, digits, 1, 0, ChainsawHudStyle.TEXT_OUTLINE, false);
+        g.drawString(mc.font, digits, 0, -1, ChainsawHudStyle.TEXT_OUTLINE, false);
+        g.drawString(mc.font, digits, 0, 1, ChainsawHudStyle.TEXT_OUTLINE, false);
+        g.drawString(mc.font, digits, 0, 0, ChainsawHudStyle.TEXT_COLOR, false);
         g.pose().popPose();
     }
 }

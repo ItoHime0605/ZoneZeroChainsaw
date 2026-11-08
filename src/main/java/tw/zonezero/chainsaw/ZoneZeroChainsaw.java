@@ -6,6 +6,10 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.minecraft.world.item.Item;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.world.inventory.MenuType;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -25,6 +29,9 @@ import net.minecraft.world.item.component.CustomData;
 @Mod(ZoneZeroChainsaw.MODID)
 public final class ZoneZeroChainsaw {
     public static final String MODID = "zonezero_chainsaw";
+    public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(net.minecraft.core.registries.Registries.MENU, MODID);
+    public static final DeferredHolder<MenuType<?>, MenuType<ChainsawUpgradeMenu>> UPGRADE_MENU =
+            MENUS.register("chainsaw_upgrade", () -> IMenuTypeExtension.create((id, inv, data) -> new ChainsawUpgradeMenu(id, inv)));
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredBlock<Block> FERMENTER = BLOCKS.register("fermentation_barrel", () -> new FermentationBarrelBlock(BlockBehaviour.Properties.of().strength(3.0f, 6.0f).sound(SoundType.WOOD)));
@@ -39,6 +46,7 @@ public final class ZoneZeroChainsaw {
 
     public ZoneZeroChainsaw(IEventBus bus) {
         BLOCKS.register(bus);
+        MENUS.register(bus);
         ITEMS.register(bus);
     }
 

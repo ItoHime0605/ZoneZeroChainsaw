@@ -2,10 +2,7 @@ package tw.zonezero.chainsaw;
 
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Item;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 
 /** Pure transaction validation for the upgrade station's three material slots. */
 public final class ChainsawUpgradeRules {
@@ -28,13 +25,28 @@ public final class ChainsawUpgradeRules {
         return resultingTier >= 0 && resultingTier < MATERIALS.length ? MATERIALS[resultingTier] : "";
     }
 
+    public static boolean isDyeOperation(ItemStack[] ingredients) {
+        int dyes = 0;
+        for (ItemStack item : ingredients) {
+            if (item.isEmpty()) continue;
+            if (!(item.getItem() instanceof DyeItem) || item.getCount() != 1) return false;
+            dyes++;
+        }
+        return dyes == 1;
+    }
+
+    public static int resultingTier(ItemStack saw) {
+        if (!saw.is(ZoneZeroChainsaw.CHAINSAW.get())) return -1;
+        boolean initialized = saw.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getBoolean("ChainsawInitialized");
+        return initialized ? ZoneZeroChainsaw.tier(saw) + 1 : 0;
+    }
+
     public static ItemStack preview(ItemStack saw, ItemStack[] ingredients) {
         if (!saw.is(ZoneZeroChainsaw.CHAINSAW.get()) || ingredients.length != 3) return ItemStack.EMPTY;
-        int current = ZoneZeroChainsaw.tier(saw);
-        int target = saw.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
-                net.minecraft.world.item.component.CustomData.EMPTY).copyTag().contains("ChainsawInitialized")
-                ? current + 1 : 0;
-        if (target > 5) return dyePreview(saw, ingredients);
+        if (isDyeOperation(ingredients)) return dyePreview(saw, ingredients);
+        int target = resultingTier(saw);
+        if (target < 0 || target > 5) return ItemStack.EMPTY;
         int fuelCans = 0;
         int metals = 0;
         boolean valid = true;
@@ -44,7 +56,7 @@ public final class ChainsawUpgradeRules {
             else if (BuiltInRegistries.ITEM.getKey(item.getItem()).toString().equals(MATERIALS[target])) metals += item.getCount();
             else valid = false;
         }
-        if (!valid || fuelCans < 1 || metals < COUNTS[target]) return dyePreview(saw, ingredients);
+        if (!valid || fuelCans != 1 || metals != COUNTS[target]) return ItemStack.EMPTY;
         ItemStack result = saw.copyWithCount(1);
         ZoneZeroChainsaw.setTier(result, target);
         net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,

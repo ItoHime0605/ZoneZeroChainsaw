@@ -32,7 +32,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y ffmpeg
-      - name: Generate original audio, model, HUD and 8-frame chain motion
+      - name: Generate original audio, 29 machine material textures, HUD and chain motion
         run: python3 tools/generate_media.py
       - name: Verify fuel and held-cut server safety regressions
         run: python3 tools/verify_safety.py
@@ -50,6 +50,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: zonezero-chainsaw-0.1.25-alpha-dev
+          name: zonezero-chainsaw-0.1.26-alpha-dev
           path: build/libs/*.jar
           if-no-files-found: error

@@ -8,6 +8,7 @@ from generate_chainsaw_sounds import create as generate_original_audio
 from generate_chainsaw_art import generate as generate_original_textures
 from generate_chainsaw_hud import generate as generate_original_hud
 from generate_chain_motion import generate as generate_chain_motion
+from generate_machine_art import make as generate_machine_art
 
 ROOT = Path(__file__).resolve().parents[1] / "src/main/resources/assets/zonezero_chainsaw"
 SOUNDS = ROOT / "sounds"
@@ -72,4 +73,5 @@ if __name__ == "__main__":
     generate_chain_motion(TEXTURES)  # Replaces running atlas with 8 original moving frames.
     generate_original_textures(TEXTURES)
     generate_original_hud(ROOT / 'textures/gui')
+    generate_machine_art(ROOT / 'textures/block')
     print("Generated six original OGG effects, 24 material sprites, two HUDs and 12 moving chain atlases.")

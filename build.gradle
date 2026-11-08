@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.78'
 }
-version = '0.1.25-alpha'
+version = '0.1.26-alpha'
 group = 'tw.zonezero'
 base { archivesName = 'zonezero-chainsaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -30,6 +30,7 @@ tasks.register('generateChainsawMedia', Exec) {
     inputs.file 'tools/generate_chainsaw_hud.py'
     inputs.file 'tools/generate_chain_motion.py'
     inputs.file 'tools/generate_chainsaw_sounds.py'
+    inputs.file 'tools/generate_machine_art.py'
     outputs.files(
         file('src/main/resources/assets/zonezero_chainsaw/sounds/start.ogg'),
         file('src/main/resources/assets/zonezero_chainsaw/sounds/engine.ogg'),
@@ -50,7 +51,12 @@ tasks.register('generateChainsawMedia', Exec) {
         file('src/main/resources/assets/zonezero_chainsaw/textures/item/housing_black.png'),
         file('src/main/resources/assets/zonezero_chainsaw/textures/item/vent_cast_v3.png'),
         file('src/main/resources/assets/zonezero_chainsaw/textures/gui/guide_idle.png'),
-        file('src/main/resources/assets/zonezero_chainsaw/textures/gui/guide_running.png')
+        file('src/main/resources/assets/zonezero_chainsaw/textures/gui/guide_running.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/block/ferment_v2_wood.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/block/ferment_v2_glass_idle.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/block/ferment_v2_glass_active.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/block/station_v2_steel.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/block/station_v2_screen.png')
     )
 }
 tasks.named('processResources') {

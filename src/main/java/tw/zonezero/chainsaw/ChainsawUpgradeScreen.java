@@ -31,10 +31,14 @@ public final class ChainsawUpgradeScreen extends AbstractContainerScreen<Chainsa
         int tier = menu.nextTier();
         if (menu.isDye()) {
             graphics.drawString(font, "染色：消耗 1 個染料", x + 42, y + 60, 0xffd8b27b, false);
+        } else if (menu.materialMissing()) {
+            graphics.drawString(font,
+                    Component.translatable("upgrade.zonezero_chainsaw.missing_material"),
+                    x + 13, y + 61, 0xffeca79f, false);
         } else if (tier >= 0 && tier <= 5) {
             String[] names = {"鐵方塊", "鐵方塊", "鈦錠", "黑金屬方塊", "鑽石方塊", "獄髓方塊"};
             int count = ChainsawUpgradeRules.requiredCount(tier);
-            graphics.drawString(font, names[tier] + " x" + count + " + 燃油桶 x1", x + 34, y + 59, 0xffe4bd85, false);
+            graphics.drawString(font, names[tier] + " x" + count + " + 生質燃油瓶 x1", x + 34, y + 59, 0xffe4bd85, false);
             graphics.drawString(font, "傷害 " + menu.nextDamage() + " / 油箱 " + menu.nextFuelCapacity(), x + 34, y + 69, 0xffa8d9a4, false);
         } else {
             graphics.drawString(font, "放入電鋸與升級材料或染料", x + 15, y + 62, 0xffd8b27b, false);

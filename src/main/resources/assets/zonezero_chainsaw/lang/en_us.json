@@ -38,5 +38,6 @@
   "subtitles.zonezero_chainsaw.cut": "Chainsaw chain spins rapidly",
   "subtitles.zonezero_chainsaw.contact": "Chainsaw makes contact",
   "subtitles.zonezero_chainsaw.stop": "Chainsaw engine shuts down",
-  "subtitles.zonezero_chainsaw.stall": "Chainsaw runs out of fuel"
+  "subtitles.zonezero_chainsaw.stall": "Chainsaw runs out of fuel",
+  "upgrade.zonezero_chainsaw.missing_material": "Upgrade material not registered"
 }

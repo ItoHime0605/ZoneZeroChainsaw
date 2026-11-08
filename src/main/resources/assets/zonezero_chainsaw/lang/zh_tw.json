@@ -40,5 +40,6 @@
   "subtitles.zonezero_chainsaw.cut": "鋸鏈高速運轉",
   "subtitles.zonezero_chainsaw.contact": "電鋸切割命中",
   "subtitles.zonezero_chainsaw.stop": "電鋸引擎熄火",
-  "subtitles.zonezero_chainsaw.stall": "電鋸燃料耗盡"
+  "subtitles.zonezero_chainsaw.stall": "電鋸燃料耗盡",
+  "upgrade.zonezero_chainsaw.missing_material": "缺少材料（檢查殭屍極限模組）"
 }

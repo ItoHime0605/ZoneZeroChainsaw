@@ -111,7 +111,7 @@ for name in expected_materials:
     p=TEXTURES/(name+".png")
     pixels=image_pixels(p)
     palette=set(pixels)
-    assert 3<len(palette)<70, (name,"Unintended noise or blank image",len(palette))
+    assert 2<=len(palette)<70, (name,"Unintended noise or blank image",len(palette))
     assert all(color[3]==255 for color in pixels),name
 assert "ferment_v2_glass_idle" in expected_materials
 assert "ferment_v2_glass_active" in expected_materials

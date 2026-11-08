@@ -34,7 +34,7 @@ public final class ChainsawUpgradeStationBlock extends HorizontalDirectionalBloc
             player.openMenu(new MenuProvider() {
                 @Override public Component getDisplayName() { return Component.translatable("container.zonezero_chainsaw.chainsaw_upgrade"); }
                 @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player p) {
-                    return new ChainsawUpgradeMenu(id, inventory);
+                    return new ChainsawUpgradeMenu(id, inventory, pos);
                 }
             });
         }

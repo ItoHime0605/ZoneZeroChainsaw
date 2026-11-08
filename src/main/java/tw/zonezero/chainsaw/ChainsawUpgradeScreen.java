@@ -28,7 +28,17 @@ public final class ChainsawUpgradeScreen extends AbstractContainerScreen<Chainsa
         }
         graphics.drawString(font, Component.literal(">").getString(), x + 49, y + 40, 0xffe3a34e, false);
         graphics.drawString(font, Component.literal(">").getString(), x + 132, y + 40, 0xffe3a34e, false);
-        graphics.drawString(font, Component.translatable("gui.zonezero_chainsaw.materials"), x + 66, y + 59, 0xffd8b27b, false);
+        int tier = menu.nextTier();
+        if (menu.isDye()) {
+            graphics.drawString(font, "染色：消耗 1 個染料", x + 42, y + 60, 0xffd8b27b, false);
+        } else if (tier >= 0 && tier <= 5) {
+            String[] names = {"鐵方塊", "鐵方塊", "鈦錠", "黑金屬方塊", "鑽石方塊", "獄髓方塊"};
+            int count = ChainsawUpgradeRules.requiredCount(tier);
+            graphics.drawString(font, names[tier] + " x" + count + " + 燃油桶 x1", x + 34, y + 59, 0xffe4bd85, false);
+            graphics.drawString(font, "傷害 " + menu.nextDamage() + " / 油箱 " + menu.nextFuelCapacity(), x + 34, y + 69, 0xffa8d9a4, false);
+        } else {
+            graphics.drawString(font, "放入電鋸與升級材料或染料", x + 15, y + 62, 0xffd8b27b, false);
+        }
         for (int row = 0; row < 3; row++) for (int col = 0; col < 9; col++) {
             int sx = x + 7 + col * 18, sy = y + 83 + row * 18;
             graphics.fill(sx, sy, sx + 18, sy + 18, 0xff171a1d);

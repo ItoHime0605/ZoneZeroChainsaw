@@ -141,6 +141,46 @@ rears = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#rubb
 fronts = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#rubber"
           and 6.7 < e["from"][0] < 8.0 and e["to"][1] > 13.3]
 assert rears and fronts, "Missing either rear or front rubber grip"
+# The custom HUD has NO dark panel: two transparent, independently drawn
+# original 112x40 guide-bar images. Text NEVER changes color on R toggle.
+import zlib
+hud_sprites={}
+for state in ("idle", "running"):
+    name = assets / "textures/gui" / ("guide_" + state + ".png")
+    assert name.is_file(), f"Missing original HUD sprite: {name}"
+    png = name.read_bytes()
+    assert png[:8] == b"\\x89PNG\\r\\n\\x1a\\n"
+    assert struct.unpack(">II", png[16:24]) == (112,40)
+    assert png[24] == 8 and png[25] == 6, "HUD sprite must use RGBA"
+    pointer=8
+    compressed=bytearray()
+    while pointer<len(png):
+        length=struct.unpack(">I",png[pointer:pointer+4])[0]
+        kind=png[pointer+4:pointer+8]
+        if kind==b"IDAT":
+            compressed+=png[pointer+8:pointer+8+length]
+        pointer+=12+length
+    raw=zlib.decompress(compressed)
+    assert len(raw)==(112*4+1)*40
+    assert all(raw[y*(112*4+1)]==0 for y in range(40))
+    pixels=[tuple(raw[(y*(112*4+1)+1)+x*4:(y*(112*4+1)+1)+x*4+4])
+            for y in range(40) for x in range(112)]
+    assert sum(p[3]==0 for p in pixels)>1200, "HUD became a solid panel"
+    assert sum(p[3]==255 for p in pixels)>1200, "HUD icon missing"
+    hud_sprites[state]=[p for p in pixels if p[3]==255]
+idle=hud_sprites["idle"]
+red=hud_sprites["running"]
+assert sum(p[0]+p[1]+p[2] for p in idle)/len(idle)>420, "Idle guide not bright silver"
+assert sum(p[0]-p[1] for p in red)/len(red)>60, "Running guide not red"
+assert Path("tools/generate_chainsaw_hud.py").is_file()
+hud_java=Path("src/main/java/tw/zonezero/chainsaw/ChainsawHud.java").read_text("utf-8")
+hud_style=Path("src/main/java/tw/zonezero/chainsaw/logic/ChainsawHudStyle.java").read_text("utf-8")
+assert "running ? BAR_RUNNING : BAR_IDLE" in hud_java
+assert "ChainsawHudStyle.TEXT_COLOR" in hud_java
+assert "ChainsawHudStyle.TEXT_OUTLINE" in hud_java
+assert "g.fill(" not in hud_java, "Unwanted intrusive dark HUD panel"
+assert "0xfff0f4f2" in hud_style
+
 # Compile-time integration with the uploaded playerAnimator API is mandatory.
 gradle = Path("build.gradle").read_text("utf-8")
 toml = Path("src/main/resources/META-INF/neoforge.mods.toml").read_text("utf-8")

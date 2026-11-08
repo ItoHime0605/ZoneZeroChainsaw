@@ -13,6 +13,7 @@ import wave
 import zlib
 
 from generate_chainsaw_art import generate as generate_original_textures
+from generate_chainsaw_hud import generate as generate_original_hud
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "src/main/resources/assets/zonezero_chainsaw"
@@ -138,4 +139,5 @@ if __name__ == "__main__":
     audio()
     texture()
     generate_original_textures(TEXTURES)
-    print("Generated original OGG effects, animated chain textures, and 24 unique pixel-art materials.")
+    generate_original_hud(ROOT / 'textures/gui')
+    print("Generated original OGG effects, animated chain textures, 24 mechanical materials and two original HUD guide bars.")

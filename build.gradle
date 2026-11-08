@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.78'
 }
-version = '0.1.19-alpha'
+version = '0.1.20-alpha'
 group = 'tw.zonezero'
 base { archivesName = 'zonezero-chainsaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -27,6 +27,7 @@ tasks.register('generateChainsawMedia', Exec) {
     commandLine executable, 'tools/generate_media.py'
     inputs.file 'tools/generate_media.py'
     inputs.file 'tools/generate_chainsaw_art.py'
+    inputs.file 'tools/generate_chainsaw_hud.py'
     outputs.files(
         file('src/main/resources/assets/zonezero_chainsaw/sounds/start.ogg'),
         file('src/main/resources/assets/zonezero_chainsaw/sounds/engine.ogg'),
@@ -37,7 +38,9 @@ tasks.register('generateChainsawMedia', Exec) {
         file('src/main/resources/assets/zonezero_chainsaw/textures/item/guide_blood_v3.png'),
         file('src/main/resources/assets/zonezero_chainsaw/textures/item/housing_orange.png'),
         file('src/main/resources/assets/zonezero_chainsaw/textures/item/housing_black.png'),
-        file('src/main/resources/assets/zonezero_chainsaw/textures/item/vent_cast_v3.png')
+        file('src/main/resources/assets/zonezero_chainsaw/textures/item/vent_cast_v3.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/gui/guide_idle.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/gui/guide_running.png')
     )
 }
 tasks.named('processResources') {

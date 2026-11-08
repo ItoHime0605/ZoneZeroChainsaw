@@ -102,6 +102,13 @@ public final class LogicSmokeTest {
         check(Math.abs((mainWalk - mainCut.x()) - (supportWalk - supportCut.x())) < .0001);
         check(Math.abs(mainWalk - mainCut.x()) < .04f);
         check(ThirdPersonGrip.arm(false,true,1,true,0,0).x() < mainCut.x());
+        // The HUD uses one fixed ivory-white text color, independent from
+        // the engine. Only the two original guide-bar sprites change.
+        check(ChainsawHudStyle.TEXT_COLOR == 0xfff0f4f2);
+        check(ChainsawHudStyle.TEXT_OUTLINE == 0xff52616b);
+        check(ChainsawHudStyle.BAR_WIDTH == 112);
+        check(ChainsawHudStyle.HEIGHT == 40);
+        check(ChainsawHudStyle.TOTAL_WIDTH >= ChainsawHudStyle.BAR_WIDTH + 65);
         check(ProcessingRules.fermentationReady(600,true,true));
         check(!ProcessingRules.fermentationReady(599,true,true));
         check(ProcessingRules.refiningReady(200,6,true));

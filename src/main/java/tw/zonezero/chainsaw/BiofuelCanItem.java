@@ -21,7 +21,7 @@ public final class BiofuelCanItem extends Item {
         ItemStack can = player.getItemInHand(hand);
         ItemStack other = player.getItemInHand(hand == InteractionHand.MAIN_HAND
                 ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
-        if (!other.is(ZoneZeroChainsaw.CHAINSAW.get()) || ZoneZeroChainsaw.fuel(other) > 1200) {
+        if (!other.is(ZoneZeroChainsaw.CHAINSAW.get()) || ZoneZeroChainsaw.fuelCapacity(other) - ZoneZeroChainsaw.fuel(other) < 600) {
             return InteractionResultHolder.pass(can);
         }
         if (!level.isClientSide) {

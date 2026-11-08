@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
+import tw.zonezero.chainsaw.logic.SustainedCutLogic;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,7 +27,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 @EventBusSubscriber(modid = ZoneZeroChainsaw.MODID)
 public final class ChainsawGameplay {
     private static final class InputState {
-        long lastHeldTick;
+        long lastHeldTick = -1000;
         int heldTicks;
         long startedAt;
         ItemStack lastSaw = ItemStack.EMPTY;
@@ -62,6 +63,7 @@ public final class ChainsawGameplay {
                 return;
             }
             ZoneZeroChainsaw.setEngineOn(saw, next);
+            ZoneZeroChainsaw.setCutting(saw, false);
             if (next) {
                 ZoneZeroChainsaw.setCoastUntil(saw, 0);
                 input.startedAt = player.level().getGameTime();
@@ -76,15 +78,21 @@ public final class ChainsawGameplay {
             player.displayClientMessage(Component.translatable(next
                     ? "message.zonezero_chainsaw.engine_on" : "message.zonezero_chainsaw.engine_off"), true);
         } else if (action == 2) {
-            if (player.getOffhandItem().isEmpty() && ZoneZeroChainsaw.isEngineOn(saw)) {
+            if (SustainedCutLogic.canCut(ZoneZeroChainsaw.isEngineOn(saw),
+                    player.getOffhandItem().isEmpty(), ZoneZeroChainsaw.fuel(saw))) {
                 input.lastHeldTick = player.level().getGameTime();
+                // This replicates a stable pose to other clients only once
+                // per state transition, not with each 4-tick damage pulse.
+                ZoneZeroChainsaw.setCutting(saw, true);
             } else {
                 input.heldTicks = 0;
                 input.lastHeldTick = -1000;
+                ZoneZeroChainsaw.setCutting(saw, false);
             }
         } else {
             input.lastHeldTick = -1000;
             input.heldTicks = 0;
+            ZoneZeroChainsaw.setCutting(saw, false);
         }
     }
 
@@ -137,11 +145,17 @@ public final class ChainsawGameplay {
                     ZoneZeroChainsaw.SOUND_ENGINE.get(),
                     net.minecraft.sounds.SoundSource.PLAYERS, 0.46f, 1.0f);
         }
-        if (tick - input.lastHeldTick > 10) {
+        if (!SustainedCutLogic.shouldCut(tick, input.lastHeldTick,
+                ZoneZeroChainsaw.isEngineOn(saw), player.getOffhandItem().isEmpty(),
+                ZoneZeroChainsaw.fuel(saw))) {
             input.heldTicks = 0;
+            ZoneZeroChainsaw.setCutting(saw, false);
             return;
         }
-        if (++input.heldTicks < 4) return;
+        // Hold the continuous pose indefinitely while input is refreshed.
+        // Only fuel/damage pulse every four ticks; never trigger a new swing.
+        ++input.heldTicks;
+        if (!SustainedCutLogic.consumeUnit(input.heldTicks)) return;
         input.heldTicks = 0;
         ZoneZeroChainsaw.setFuel(saw, ZoneZeroChainsaw.fuel(saw) - 1);
         net.minecraft.world.item.component.CustomData.update(

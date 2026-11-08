@@ -94,12 +94,29 @@ public final class ZoneZeroChainsaw {
         if (added > 0) setFuel(stack, fuel(stack) + added);
         return added;
     }
+    /** Server-synchronized held-cut state. Kept separate from the engine state. */
+    public static boolean isCutting(ItemStack stack) {
+        return isEngineOn(stack) && fuel(stack) > 0
+                && stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                        .copyTag().getBoolean("ChainsawCutting");
+    }
+
+    public static void setCutting(ItemStack stack, boolean cutting) {
+        boolean current = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                .copyTag().getBoolean("ChainsawCutting");
+        if (current != cutting) {
+            CustomData.update(DataComponents.CUSTOM_DATA, stack,
+                    tag -> tag.putBoolean("ChainsawCutting", cutting));
+        }
+    }
+
     public static boolean isEngineOn(ItemStack stack) {
         return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
                 .copyTag().getBoolean("ChainsawEngineOn");
     }
 
     public static void setEngineOn(ItemStack stack, boolean on) {
+        if (!on) setCutting(stack, false);
         CustomData.update(DataComponents.CUSTOM_DATA, stack,
                 tag -> tag.putBoolean("ChainsawEngineOn", on));
     }

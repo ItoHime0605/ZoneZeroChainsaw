@@ -20,18 +20,10 @@ import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsE
  */
 @EventBusSubscriber(modid = ZoneZeroChainsaw.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ChainsawTwoHandedClient {
+    // 1.21.1-compatible built-in two-handed braced pose. This avoids newer
+    // dynamic ArmPose APIs unavailable in the server's NeoForge baseline.
     private static final HumanoidModel.ArmPose TWO_HANDED =
-            HumanoidModel.ArmPose.create("ZONEZERO_CHAINSAW_TWO_HANDED", true,
-                    (model, entity, arm) -> {
-                        // Both hands brace the saw. The offhand stays near the
-                        // front U-guard while the dominant hand grips the rear.
-                        model.rightArm.xRot = -1.20f;
-                        model.rightArm.yRot = -0.20f;
-                        model.rightArm.zRot = 0.05f;
-                        model.leftArm.xRot = -1.28f;
-                        model.leftArm.yRot = 0.43f;
-                        model.leftArm.zRot = -0.16f;
-                    });
+            HumanoidModel.ArmPose.CROSSBOW_HOLD;
 
     private ChainsawTwoHandedClient() {}
 

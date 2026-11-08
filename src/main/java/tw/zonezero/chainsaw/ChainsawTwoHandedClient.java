@@ -1,6 +1,7 @@
 package tw.zonezero.chainsaw;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -12,10 +13,15 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+import tw.zonezero.chainsaw.logic.FirstPersonGrip;
 
 /**
- * Real third-person two-hand player arm pose, plus first-person positioning
- * of the empty support hand. Does not change skin color or renderer state.
+ * First-person chainsaw grip ONLY. The playerAnimator layer owns the
+ * third-person two-arm pose, and rendering/skin layers remain vanilla.
+ *
+ * Every idle/running/cutting model shares the SAME first-person item display
+ * transform. Hand-space movement is interpolated smoothly as LMB is held;
+ * no abrupt resize, model jump or new four-tick swing is introduced here.
  */
 @EventBusSubscriber(modid = ZoneZeroChainsaw.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ChainsawTwoHandedClient {
@@ -24,7 +30,8 @@ public final class ChainsawTwoHandedClient {
     private static boolean canWield(LivingEntity entity, ItemStack stack) {
         return entity != null && entity.getMainHandItem() == stack
                 && entity.getOffhandItem().isEmpty()
-                && ZoneZeroChainsaw.isEngineOn(stack);
+                && ZoneZeroChainsaw.isEngineOn(stack)
+                && ZoneZeroChainsaw.fuel(stack) > 0;
     }
 
     @SubscribeEvent
@@ -35,19 +42,14 @@ public final class ChainsawTwoHandedClient {
                                                     ItemStack stack, float partialTick,
                                                     float equipProgress, float swingProgress) {
                 if (!stack.is(ZoneZeroChainsaw.CHAINSAW.get())) return false;
-                if (!player.getOffhandItem().isEmpty()) {
-                    // Without both free hands, the unpowered weight hangs low.
-                    pose.translate(0.0, -0.42, 0.22);
-                } else if (ZoneZeroChainsaw.isEngineOn(stack)) {
-                    // The arm settles into a ready stance when R is pressed.
-                    // Pressing and HOLDING LMB eases the tool forwards once;
-                    // no 4-tick recoil or per-hit downward slash is applied.
-                    float forward = ChainsawClientInput.cutProgress(partialTick);
-                    float side = arm == HumanoidArm.RIGHT ? 1.0f : -1.0f;
-                    pose.translate(-0.12 * side - 0.07 * side * forward,
-                            -0.10 + 0.11 * forward, -0.22 - 0.48 * forward);
-                }
-                // Preserve vanilla's arm/skin rendering and existing model transform.
+                boolean running = canWield(player, stack);
+                float cut = running ? ChainsawClientInput.cutProgress(partialTick) : 0.0f;
+                boolean leftMain = arm == HumanoidArm.LEFT;
+                FirstPersonGrip.Offset offset = FirstPersonGrip.mainHand(
+                        player.getOffhandItem().isEmpty(), running, leftMain, cut);
+                pose.translate(offset.x(), offset.y(), offset.z());
+                // false = preserve NeoForge/vanilla first-person item and skin
+                // rendering. No replacement of player render buffers or layers.
                 return false;
             }
         }, ZoneZeroChainsaw.CHAINSAW.get());
@@ -59,17 +61,18 @@ public final class ChainsawTwoHandedClient {
 
         @SubscribeEvent
         public static void hand(RenderHandEvent event) {
-            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            Minecraft mc = Minecraft.getInstance();
             if (event.getHand() != InteractionHand.OFF_HAND || mc.player == null) return;
-            ItemStack stack = mc.player.getMainHandItem();
-            if (!canWield(mc.player, stack)) return;
-            // The vanilla empty offhand arm is moved toward the front guard.
-            // No layer replacements or RGB manipulation.
-            float forward = ChainsawClientInput.cutProgress(event.getPartialTick());
-            event.getPoseStack().translate(0.17 - 0.035 * forward,
-                    0.18 + 0.07 * forward, -0.42 - 0.34 * forward);
+            ItemStack saw = mc.player.getMainHandItem();
+            if (!canWield(mc.player, saw)) return;
+            float cut = ChainsawClientInput.cutProgress(event.getPartialTick());
+            FirstPersonGrip.Offset offset = FirstPersonGrip.supportHand(
+                    mc.player.getMainArm() == HumanoidArm.LEFT, cut);
+            event.getPoseStack().translate(offset.x(), offset.y(), offset.z());
+            // Tilt only the supporting arm toward the forward U guard.
+            float tilt = -12.0f - 7.0f * cut;
             event.getPoseStack().mulPose(
-                    com.mojang.math.Axis.XP.rotationDegrees(-16 - 8 * forward));
+                    com.mojang.math.Axis.XP.rotationDegrees(tilt));
         }
     }
 }

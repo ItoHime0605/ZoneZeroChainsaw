@@ -3271,36 +3271,36 @@
   "display": {
     "firstperson_righthand": {
       "rotation": [
-        5,
-        -62,
-        -11
+        8,
+        -65,
+        -5
       ],
       "translation": [
-        -1.2,
-        3.4,
-        1.35
+        -4.3,
+        4,
+        -0.9
       ],
       "scale": [
-        0.56,
-        0.56,
-        0.56
+        0.61,
+        0.61,
+        0.61
       ]
     },
     "firstperson_lefthand": {
       "rotation": [
-        5,
-        62,
-        11
+        8,
+        65,
+        5
       ],
       "translation": [
-        1.2,
-        3.4,
-        1.35
+        4.3,
+        4,
+        -0.9
       ],
       "scale": [
-        0.56,
-        0.56,
-        0.56
+        0.61,
+        0.61,
+        0.61
       ]
     },
     "thirdperson_righthand": {

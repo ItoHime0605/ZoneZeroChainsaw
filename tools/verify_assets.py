@@ -54,20 +54,29 @@ body = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#orang
 blade = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#guide"]
 assert min(e["from"][0] for e in blade) < -8, "Guide bar has shrunk"
 assert max(e["to"][0] for e in body) - min(e["from"][0] for e in body) < 9, "Body too thick"
-# Catch the bug in 0.1.13: the held saw was virtually out of view.
-for hand in ("firstperson_righthand", "firstperson_lefthand"):
-    t = base["display"][hand]
-    assert 2.5 <= t["translation"][1] <= 6.0, "Idle chainsaw below viewport"
-    assert .50 <= t["scale"][0] <= .64, "Idle chainsaw tiny or oversized"
-active = json.loads((root / "chainsaw_active.json").read_text("utf-8"))
-for hand in ("firstperson_righthand", "firstperson_lefthand"):
-    t = active["display"][hand]
-    assert 3.0 <= t["translation"][1] <= 6.0, "Cutting chainsaw below viewport"
-    assert .50 <= t["scale"][0] <= .64, "Cutting chainsaw tiny or oversized"
+# All states MUST share the same first-person transform. The held
+# input smoothly advances the PoseStack instead; never jump models per hit.
+firstperson = ("firstperson_righthand", "firstperson_lefthand")
+for hand in firstperson:
+    pose = base["display"][hand]
+    assert pose["rotation"] == ([8, -65, -5] if hand.endswith("righthand") else [8, 65, 5])
+    assert 3.5 <= pose["translation"][1] <= 5.0
+    assert .55 <= pose["scale"][0] <= .65
+    assert 0 < abs(pose["translation"][0]) <= 5
+for mode in ("chainsaw_active", "chainsaw_running"):
+    model = json.loads((root / (mode + ".json")).read_text("utf-8"))
+    for hand in firstperson:
+        assert model["display"][hand] == base["display"][hand], (mode, hand)
 for color in colors:
-    model = json.loads((root / f"chainsaw_{color}_active.json").read_text("utf-8"))
-    for hand in ("firstperson_righthand", "firstperson_lefthand"):
-        assert model["display"][hand] == active["display"][hand], (color, hand)
+    active = json.loads((root / f"chainsaw_{color}_active.json").read_text("utf-8"))
+    for hand in firstperson:
+        assert active["display"][hand] == base["display"][hand], (color, hand)
+    # Dyed running variants inherit the color base without overriding
+    # firstperson: they must NOT reintroduce a sudden camera-space jump.
+    running = json.loads((root / f"chainsaw_{color}_running.json").read_text("utf-8"))
+    assert "display" not in running or all(
+        running["display"].get(hand, base["display"][hand]) == base["display"][hand]
+        for hand in firstperson), color
 for name in ("chain_running", "chain_coast"):
     png = assets / "textures/item" / (name + ".png")
     assert png.is_file(), f"Missing animated texture: {name}"

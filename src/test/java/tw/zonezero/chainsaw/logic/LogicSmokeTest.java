@@ -48,6 +48,22 @@ public final class LogicSmokeTest {
         check(SustainedCutLogic.interpolate(0f,1f,.5f) == .5f);
         for (int tick = 0; tick < 4; tick++) holdPose = SustainedCutLogic.approach(holdPose, 0f);
         check(holdPose == 0f);
+        // First-person positioning is shared across idle, running and
+        // cutting. Forward motion is monotone and both arms follow together.
+        FirstPersonGrip.Offset ready = FirstPersonGrip.mainHand(true,true,false,0);
+        FirstPersonGrip.Offset forward = FirstPersonGrip.mainHand(true,true,false,1);
+        FirstPersonGrip.Offset other = FirstPersonGrip.mainHand(true,true,true,1);
+        check(forward.z() < ready.z());
+        check(forward.y() > ready.y());
+        check(forward.x() == -other.x() && forward.y() == other.y());
+        check(forward.z() == other.z());
+        FirstPersonGrip.Offset support = FirstPersonGrip.supportHand(false,0);
+        FirstPersonGrip.Offset supportForward = FirstPersonGrip.supportHand(false,1);
+        check(supportForward.z() < support.z());
+        check(supportForward.y() > support.y());
+        check(supportForward.x() == -FirstPersonGrip.supportHand(true,1).x());
+        FirstPersonGrip.Offset blocked = FirstPersonGrip.mainHand(false,false,false,1);
+        check(blocked.y() < ready.y() && blocked.z() > ready.z());
         check(ProcessingRules.fermentationReady(600,true,true));
         check(!ProcessingRules.fermentationReady(599,true,true));
         check(ProcessingRules.refiningReady(200,6,true));

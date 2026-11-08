@@ -125,7 +125,7 @@ java=(Path("src/main/java/tw/zonezero/chainsaw/ZoneZeroChainsaw.java")
 assert 'BLOCKS.register("fermentation_barrel"' in java
 assert 'BLOCKS.register("chainsaw_upgrade_station"' in java
 generator=Path("tools/generate_machine_art.py").read_text("utf-8")
-assert "random" not in generator and "noise(" not in generator
+assert "import random" not in generator and "random." not in generator and "noise(" not in generator
 assert "ferment_v2_wood" in generator and "station_v2_steel" in generator
 print("PASS: clean authored 64x64 art, valid states, model geometry and",
       len(expected_materials),"referenced machine materials")

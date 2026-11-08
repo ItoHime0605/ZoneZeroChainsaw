@@ -29,17 +29,19 @@ public final class ClientItemModels {
             ItemProperties.register(ZoneZeroChainsaw.CHAINSAW.get(),
                     ResourceLocation.fromNamespaceAndPath(ZoneZeroChainsaw.MODID, "cutting"),
                     (stack, level, entity, seed) -> {
-                        if (!ZoneZeroChainsaw.isEngineOn(stack) || entity == null) return 0.0F;
+                        if (!ZoneZeroChainsaw.isEngineOn(stack)
+                                || ZoneZeroChainsaw.fuel(stack) <= 0
+                                || entity == null
+                                || !entity.getOffhandItem().isEmpty()
+                                || entity.getMainHandItem() != stack) return 0.0f;
+
+                        // Local input is predictive; remote players render
+                        // the authoritative, replicated cutting flag.
                         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-                        if (mc.player == entity && mc.screen == null
-                                && entity.getMainHandItem() == stack
-                                && mc.options.keyAttack.isDown()) return 1.0F;
-                        if (level == null) return 0.0F;
-                        long last = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
-                                net.minecraft.world.item.component.CustomData.EMPTY)
-                                .copyTag().getLong("ChainsawCuttingAt");
-                        return last > 0 && level.getGameTime() - last <= 6
-                                && level.getGameTime() >= last ? 1.0F : 0.0F;
+                        if (mc.player == entity) {
+                            return ChainsawClientInput.isHoldingCut() ? 1.0f : 0.0f;
+                        }
+                        return ZoneZeroChainsaw.isCutting(stack) ? 1.0f : 0.0f;
                     });
 
             // Minecraft 1.21.1 uses predicate-based model overrides. The

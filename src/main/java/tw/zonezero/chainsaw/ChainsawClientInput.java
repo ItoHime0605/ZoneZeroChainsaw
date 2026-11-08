@@ -13,6 +13,18 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class ChainsawClientInput {
     private static boolean lastAttackHeld;
     private static int tickCounter;
+    private static float lastCutPose;
+    private static float cutPose;
+    private static boolean cutRequested;
+
+    public static boolean isHoldingCut() {
+        return cutRequested;
+    }
+
+    public static float cutProgress(float partialTick) {
+        return tw.zonezero.chainsaw.logic.SustainedCutLogic.interpolate(
+                lastCutPose, cutPose, partialTick);
+    }
 
     private ChainsawClientInput() {}
 
@@ -21,6 +33,10 @@ public final class ChainsawClientInput {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             lastAttackHeld = false;
+            cutRequested = false;
+            tickCounter = 0;
+            lastCutPose = 0;
+            cutPose = 0;
             return;
         }
         boolean heldSaw = mc.player.getMainHandItem().is(ZoneZeroChainsaw.CHAINSAW.get());
@@ -36,6 +52,10 @@ public final class ChainsawClientInput {
             tickCounter = 0;
         }
         lastAttackHeld = attacking;
+        cutRequested = attacking;
+        lastCutPose = cutPose;
+        cutPose = tw.zonezero.chainsaw.logic.SustainedCutLogic.approach(
+                cutPose, attacking ? 1.0f : 0.0f);
         // Vanilla short swinging attack visually conflicts with a continuous
         // held chainsaw. Freeze the swing timer while motor is running; the
         // actual server-authoritative hit pulses remain at 4 ticks each.

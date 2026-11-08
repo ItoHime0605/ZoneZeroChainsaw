@@ -39,8 +39,13 @@ public final class ChainsawTwoHandedClient {
                     // Without both free hands, the unpowered weight hangs low.
                     pose.translate(0.0, -0.42, 0.22);
                 } else if (ZoneZeroChainsaw.isEngineOn(stack)) {
-                    // Pull the running saw into a centered, two-handed grip.
-                    pose.translate(arm == HumanoidArm.RIGHT ? -0.12 : 0.12, -0.10, -0.22);
+                    // The arm settles into a ready stance when R is pressed.
+                    // Pressing and HOLDING LMB eases the tool forwards once;
+                    // no 4-tick recoil or per-hit downward slash is applied.
+                    float forward = ChainsawClientInput.cutProgress(partialTick);
+                    float side = arm == HumanoidArm.RIGHT ? 1.0f : -1.0f;
+                    pose.translate(-0.12 * side - 0.07 * side * forward,
+                            -0.10 + 0.11 * forward, -0.22 - 0.48 * forward);
                 }
                 // Preserve vanilla's arm/skin rendering and existing model transform.
                 return false;
@@ -60,8 +65,11 @@ public final class ChainsawTwoHandedClient {
             if (!canWield(mc.player, stack)) return;
             // The vanilla empty offhand arm is moved toward the front guard.
             // No layer replacements or RGB manipulation.
-            event.getPoseStack().translate(0.17, 0.18, -0.42);
-            event.getPoseStack().mulPose(com.mojang.math.Axis.XP.rotationDegrees(-16));
+            float forward = ChainsawClientInput.cutProgress(event.getPartialTick());
+            event.getPoseStack().translate(0.17 - 0.035 * forward,
+                    0.18 + 0.07 * forward, -0.42 - 0.34 * forward);
+            event.getPoseStack().mulPose(
+                    com.mojang.math.Axis.XP.rotationDegrees(-16 - 8 * forward));
         }
     }
 }

@@ -15,6 +15,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import tw.zonezero.chainsaw.logic.SustainedCutLogic;
+import tw.zonezero.chainsaw.logic.ThirdPersonGrip;
 
 /**
  * Two DISTINCT static two-hand poses:
@@ -85,37 +86,28 @@ public final class ChainsawPlayerAnimator {
 
         @Override
         public Vec3f get3DTransform(String part, TransformType type, float delta, Vec3f base) {
+            // Only shoulder rotations for both arms. Other player animation
+            // layers and custom model/skin bones are not modified.
             if (type != TransformType.ROTATION) return base;
-            boolean leftMain = player.getMainArm() == HumanoidArm.LEFT;
             boolean rightArm = "rightArm".equals(part) || "right_arm".equals(part);
             boolean leftArm = "leftArm".equals(part) || "left_arm".equals(part);
             if (!rightArm && !leftArm) return base;
 
-            float support = SustainedCutLogic.interpolate(oldHold, hold, delta);
-            float forward = SustainedCutLogic.interpolate(oldCut, cut, delta);
-            if (support <= 0.0f) return base;
+            float holdBlend = SustainedCutLogic.interpolate(oldHold, hold, delta);
+            if (holdBlend <= 0f) return base;
+            float cutBlend = SustainedCutLogic.interpolate(oldCut, cut, delta);
 
-            // Right-handed default. When main arm is left, the two roles
-            // mirror instead of putting the left hand behind the machine.
-            boolean main = leftMain ? leftArm : rightArm;
-            float mirror = rightArm ? 1.0f : -1.0f;
+            ThirdPersonGrip.Rotation aim =
+                    ThirdPersonGrip.arm(
+                            player.getMainArm() == HumanoidArm.LEFT,
+                            rightArm, cutBlend, player.isCrouching(),
+                            player.getDeltaMovement().horizontalDistanceSqr(),
+                            player.tickCount + delta);
 
-            float readyX = main ? -1.05f : -1.17f;
-            float readyY = main ? -0.23f * mirror : -0.40f * mirror;
-            float readyZ = main ? 0.08f * mirror : -0.12f * mirror;
-
-            // Both hands remain extended until the user RELEASES left click.
-            float cuttingX = main ? -1.47f : -1.56f;
-            float cuttingY = main ? -0.13f * mirror : -0.29f * mirror;
-            float cuttingZ = main ? 0.06f * mirror : -0.08f * mirror;
-
-            float x = readyX + (cuttingX - readyX) * forward;
-            float y = readyY + (cuttingY - readyY) * forward;
-            float z = readyZ + (cuttingZ - readyZ) * forward;
             return new Vec3f(
-                    base.getX() + (x - base.getX()) * support,
-                    base.getY() + (y - base.getY()) * support,
-                    base.getZ() + (z - base.getZ()) * support);
+                    base.getX() + (aim.x() - base.getX()) * holdBlend,
+                    base.getY() + (aim.y() - base.getY()) * holdBlend,
+                    base.getZ() + (aim.z() - base.getZ()) * holdBlend);
         }
 
         @Override

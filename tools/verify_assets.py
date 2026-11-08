@@ -90,18 +90,30 @@ for name in ("start", "engine", "cut", "stop"):
     path = assets / "sounds" / (name + ".ogg")
     assert path.is_file() and path.read_bytes()[:4] == b"OggS"
 
-# User-reported pose regression: no off-axis diagonal strike when held.
-assert base["display"]["thirdperson_righthand"]["rotation"][1] == -90
-assert base["display"]["thirdperson_righthand"]["rotation"][2] == 0
-for posture in ("chainsaw_running", "chainsaw_active"):
-    model = json.loads((root / (posture + ".json")).read_text("utf-8"))
-    assert model["display"]["thirdperson_righthand"]["rotation"] == [0, -90, 0], posture
+# All held models use the same third-person physical grip anchor.
+# No position/scale snap when R starts or when continuous cutting begins.
+thirdperson = ("thirdperson_righthand", "thirdperson_lefthand")
+for hand in thirdperson:
+    display = base["display"][hand]
+    assert display["rotation"] == ([0,-90,0] if hand.endswith("righthand") else [0,90,0])
+    assert display["scale"] == [.59,.59,.59]
+    assert display["translation"][2] == -4.6
+for mode in ("chainsaw_running","chainsaw_active"):
+    model = json.loads((root / (mode + ".json")).read_text("utf-8"))
+    for hand in thirdperson:
+        assert model["display"][hand] == base["display"][hand], (mode,hand)
 for color in colors:
-    running = json.loads((root / f"chainsaw_{color}_running.json").read_text("utf-8"))
-    cutting = json.loads((root / f"chainsaw_{color}_active.json").read_text("utf-8"))
-    assert running["display"]["thirdperson_righthand"]["rotation"] == [0, -90, 0], color
-    assert cutting["display"]["thirdperson_righthand"]["rotation"] == [0, -90, 0], color
-
+    for state in ("running","active"):
+        model = json.loads((root / f"chainsaw_{color}_{state}.json").read_text("utf-8"))
+        for hand in thirdperson:
+            assert model["display"][hand] == base["display"][hand], (color,state,hand)
+# Model geometry was designed with a U at x≈7.33 and rear handle at
+# x≈17.96. Both remain present; the support arm is forward of the main arm.
+rears = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#rubber"
+         and e["from"][0] > 17]
+fronts = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#rubber"
+          and 6.7 < e["from"][0] < 8.0 and e["to"][1] > 13.3]
+assert rears and fronts, "Missing either rear or front rubber grip"
 # Compile-time integration with the uploaded playerAnimator API is mandatory.
 gradle = Path("build.gradle").read_text("utf-8")
 toml = Path("src/main/resources/META-INF/neoforge.mods.toml").read_text("utf-8")

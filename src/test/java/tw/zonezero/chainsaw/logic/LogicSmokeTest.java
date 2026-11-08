@@ -64,6 +64,44 @@ public final class LogicSmokeTest {
         check(supportForward.x() == -FirstPersonGrip.supportHand(true,1).x());
         FirstPersonGrip.Offset blocked = FirstPersonGrip.mainHand(false,false,false,1);
         check(blocked.y() < ready.y() && blocked.z() > ready.z());
+        // Both hand anchors are derived from the real authored model:
+        // the front U must be farther forward/up than the rear trigger grip.
+        ThirdPersonGrip.Point rear = ThirdPersonGrip.rearGrip();
+        ThirdPersonGrip.Point front = ThirdPersonGrip.frontGuard();
+        check(Math.abs(rear.x()) < 1.0);
+        check(rear.z() > 0.5 && rear.z() < 2.0);
+        check(front.z() < rear.z() - 5.0);
+        check(front.y() > rear.y() + 2.5);
+        // Main and supporting arms have separate grips; both aim ahead
+        // while holding, and both extend further during continuous cutting.
+        ThirdPersonGrip.Rotation mainReady =
+                ThirdPersonGrip.arm(false,true,0,false,0,0);
+        ThirdPersonGrip.Rotation supportReady =
+                ThirdPersonGrip.arm(false,false,0,false,0,0);
+        ThirdPersonGrip.Rotation mainCut =
+                ThirdPersonGrip.arm(false,true,1,false,0,0);
+        ThirdPersonGrip.Rotation supportCut =
+                ThirdPersonGrip.arm(false,false,1,false,0,0);
+        check(mainReady.x() < -0.9f && supportReady.x() < mainReady.x());
+        check(mainCut.x() < mainReady.x() && supportCut.x() < supportReady.x());
+        check(Math.abs(mainCut.x() - supportCut.x()) > .05f);
+        // Left-main-hand posture mirrors right-main-hand posture.
+        ThirdPersonGrip.Rotation mirroredMain =
+                ThirdPersonGrip.arm(true,false,1,false,0,0);
+        ThirdPersonGrip.Rotation mirroredSupport =
+                ThirdPersonGrip.arm(true,true,1,false,0,0);
+        check(mainCut.x() == mirroredMain.x());
+        check(mainCut.y() == -mirroredMain.y());
+        check(mainCut.z() == -mirroredMain.z());
+        check(supportCut.x() == mirroredSupport.x());
+        check(supportCut.y() == -mirroredSupport.y());
+        // Player locomotion applies tiny synchronized sway, not repeating
+        // a large up/down chopping motion.
+        float mainWalk = ThirdPersonGrip.arm(false,true,1,false,.05,13).x();
+        float supportWalk = ThirdPersonGrip.arm(false,false,1,false,.05,13).x();
+        check(Math.abs((mainWalk - mainCut.x()) - (supportWalk - supportCut.x())) < .0001);
+        check(Math.abs(mainWalk - mainCut.x()) < .04f);
+        check(ThirdPersonGrip.arm(false,true,1,true,0,0).x() < mainCut.x());
         check(ProcessingRules.fermentationReady(600,true,true));
         check(!ProcessingRules.fermentationReady(599,true,true));
         check(ProcessingRules.refiningReady(200,6,true));

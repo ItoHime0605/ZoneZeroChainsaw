@@ -1,3 +1,11 @@
 {
-  "parent": "zonezero_chainsaw:item/biofuel_bottle_inventory"
+  "parent": "zonezero_chainsaw:item/biofuel_bottle_inventory",
+  "overrides": [
+    {
+      "predicate": {
+        "zonezero_chainsaw:held": 1
+      },
+      "model": "zonezero_chainsaw:item/biofuel_bottle_handheld"
+    }
+  ]
 }

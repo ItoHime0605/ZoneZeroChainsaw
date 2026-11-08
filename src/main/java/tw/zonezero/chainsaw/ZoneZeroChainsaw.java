@@ -6,6 +6,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.item.ItemStack;
@@ -19,8 +20,8 @@ public final class ZoneZeroChainsaw {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredBlock<Block> FERMENTER = BLOCKS.registerSimpleBlock("fermentation_barrel", BlockBehaviour.Properties.of().strength(2.5f));
     public static final DeferredBlock<Block> REFINERY = BLOCKS.registerSimpleBlock("fuel_refinery", BlockBehaviour.Properties.of().strength(3.5f));
-    public static final DeferredItem<Item> FERMENTER_ITEM = ITEMS.registerSimpleBlockItem("fermentation_barrel", FERMENTER);
-    public static final DeferredItem<Item> REFINERY_ITEM = ITEMS.registerSimpleBlockItem("fuel_refinery", REFINERY);
+    public static final DeferredItem<BlockItem> FERMENTER_ITEM = ITEMS.registerSimpleBlockItem("fermentation_barrel", FERMENTER);
+    public static final DeferredItem<BlockItem> REFINERY_ITEM = ITEMS.registerSimpleBlockItem("fuel_refinery", REFINERY);
     public static final DeferredItem<Item> CRUDE = ITEMS.registerSimpleItem("fermented_crude", new Item.Properties());
     public static final DeferredItem<Item> FUEL = ITEMS.registerSimpleItem("biofuel_bottle", new Item.Properties().stacksTo(16));
     public static final DeferredItem<Item> CHAINSAW = ITEMS.registerSimpleItem("chainsaw", new Item.Properties().stacksTo(1));

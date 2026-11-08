@@ -40,7 +40,8 @@ public final class ChainsawClientInput {
             return;
         }
         boolean heldSaw = mc.player.getMainHandItem().is(ZoneZeroChainsaw.CHAINSAW.get());
-        boolean active = mc.screen == null && heldSaw;
+        boolean active = mc.screen == null && heldSaw
+                && mc.player.isAlive() && !mc.player.isSpectator();
         while (ChainsawClientKeys.TOGGLE_ENGINE.consumeClick()) {
             if (active) PacketDistributor.sendToServer(new ChainsawControlPacket((byte) 1));
         }

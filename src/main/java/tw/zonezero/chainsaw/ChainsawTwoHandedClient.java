@@ -28,7 +28,10 @@ public final class ChainsawTwoHandedClient {
     private ChainsawTwoHandedClient() {}
 
     private static boolean canWield(LivingEntity entity, ItemStack stack) {
-        return entity != null && entity.getMainHandItem() == stack
+        return entity != null
+                && entity.getMainHandItem().is(ZoneZeroChainsaw.CHAINSAW.get())
+                && (entity.getMainHandItem() == stack ||
+                        ItemStack.isSameItemSameComponents(entity.getMainHandItem(), stack))
                 && entity.getOffhandItem().isEmpty()
                 && ZoneZeroChainsaw.isEngineOn(stack)
                 && ZoneZeroChainsaw.fuel(stack) > 0;
@@ -62,7 +65,8 @@ public final class ChainsawTwoHandedClient {
         @SubscribeEvent
         public static void hand(RenderHandEvent event) {
             Minecraft mc = Minecraft.getInstance();
-            if (event.getHand() != InteractionHand.OFF_HAND || mc.player == null) return;
+            if (event.getHand() != InteractionHand.OFF_HAND || mc.player == null
+                    || mc.screen != null || mc.player.isSpectator()) return;
             ItemStack saw = mc.player.getMainHandItem();
             if (!canWield(mc.player, saw)) return;
             float cut = ChainsawClientInput.cutProgress(event.getPartialTick());

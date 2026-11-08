@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "zonezero_chainsaw:item/fermented_crude_inventory"
+  }
+}

@@ -1,6 +1,7 @@
 package tw.zonezero.chainsaw;
 
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -11,9 +12,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 
 public final class FermentationBarrelBlock extends HorizontalDirectionalBlock {
+    public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
     public FermentationBarrelBlock(BlockBehaviour.Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ACTIVE, false));
     }
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
@@ -29,6 +31,6 @@ public final class FermentationBarrelBlock extends HorizontalDirectionalBlock {
     }
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, ACTIVE);
     }
 }

@@ -200,6 +200,62 @@ public final class LogicSmokeTest {
         check(ChainsawHudStyle.BAR_WIDTH == 112);
         check(ChainsawHudStyle.HEIGHT == 40);
         check(ChainsawHudStyle.TOTAL_WIDTH >= ChainsawHudStyle.BAR_WIDTH + 65);
+        // Upgrade recipe matrix: six exact tiers, 27 titanium ingots
+        // split across multiple slots, one fuel can, no extras or partials.
+        int[] prices={3,6,27,3,3,3};
+        for (int tier=0;tier<6;tier++) {
+            check(UpgradePlanLogic.requiredCount(tier)==prices[tier]);
+            int[] k={UpgradePlanLogic.MATERIAL, UpgradePlanLogic.FUEL, UpgradePlanLogic.EMPTY};
+            int[] q={prices[tier],1,0};
+            int[] dye={0,0,0};
+            UpgradePlanLogic.Plan plan=UpgradePlanLogic.match(tier,-1,k,q,dye);
+            check(plan.valid() && !plan.dye() && plan.targetTier()==tier);
+            check(!UpgradePlanLogic.match(tier,-1,k,new int[]{prices[tier]-1,1,0},dye).valid());
+            check(!UpgradePlanLogic.match(tier,-1,k,new int[]{prices[tier]+1,1,0},dye).valid());
+            check(!UpgradePlanLogic.match(tier,-1,k,new int[]{prices[tier],2,0},dye).valid());
+            check(!UpgradePlanLogic.match(tier,-1,k,new int[]{prices[tier],0,0},dye).valid());
+            check(!UpgradePlanLogic.match(tier,-1,
+                    new int[]{UpgradePlanLogic.MATERIAL, UpgradePlanLogic.FUEL, UpgradePlanLogic.INVALID},
+                    new int[]{prices[tier],1,1}, dye).valid());
+        }
+        check(UpgradePlanLogic.match(2,-1,
+                new int[]{UpgradePlanLogic.MATERIAL,UpgradePlanLogic.MATERIAL,UpgradePlanLogic.FUEL},
+                new int[]{18,9,1},new int[]{0,0,0}).valid());
+        check(!UpgradePlanLogic.match(2,-1,
+                new int[]{UpgradePlanLogic.MATERIAL,UpgradePlanLogic.MATERIAL,UpgradePlanLogic.FUEL},
+                new int[]{18,8,1},new int[]{0,0,0}).valid());
+        check(UpgradePlanLogic.targetTier(false,0)==0);
+        check(UpgradePlanLogic.targetTier(true,0)==1);
+        check(UpgradePlanLogic.targetTier(true,4)==5);
+        check(UpgradePlanLogic.targetTier(true,5)==-1);
+        check(UpgradePlanLogic.requiredCount(-1)==0);
+        check(UpgradePlanLogic.requiredCount(6)==0);
+        // 16 colors: undyed orange must accept first white dye (ID 0);
+        // repeated same dye must be rejected rather than consume materials.
+        for (int color=0;color<16;color++) {
+            int[] dyetypes={UpgradePlanLogic.DYE,UpgradePlanLogic.EMPTY,UpgradePlanLogic.EMPTY};
+            int[] quantities={1,0,0};
+            int[] colors={color,0,0};
+            UpgradePlanLogic.Plan uncolored=UpgradePlanLogic.match(0,-1,dyetypes,quantities,colors);
+            check(uncolored.valid() && uncolored.dye() && uncolored.dyeColor()==color);
+            check(!UpgradePlanLogic.match(0,color,dyetypes,quantities,colors).valid());
+            check(!UpgradePlanLogic.match(0,-1,dyetypes,
+                    new int[]{2,0,0},colors).valid());
+            check(!UpgradePlanLogic.match(0,-1,
+                    new int[]{UpgradePlanLogic.DYE,UpgradePlanLogic.DYE,UpgradePlanLogic.EMPTY},
+                    new int[]{1,1,0},new int[]{color,color,0}).valid());
+            check(!UpgradePlanLogic.match(0,-1,
+                    new int[]{UpgradePlanLogic.DYE,UpgradePlanLogic.FUEL,UpgradePlanLogic.EMPTY},
+                    new int[]{1,1,0},colors).valid());
+        }
+        check(!UpgradePlanLogic.match(6,-1,
+                new int[]{UpgradePlanLogic.MATERIAL,UpgradePlanLogic.FUEL,UpgradePlanLogic.EMPTY},
+                new int[]{3,1,0},new int[3]).valid());
+        check(!UpgradePlanLogic.match(0,-1,null,null,null).valid());
+        check(!UpgradePlanLogic.match(0,-1,new int[2],new int[3],new int[3]).valid());
+        check(!UpgradePlanLogic.match(0,-1,
+                new int[]{UpgradePlanLogic.EMPTY,UpgradePlanLogic.EMPTY,UpgradePlanLogic.EMPTY},
+                new int[]{1,0,0},new int[3]).valid());
         check(ProcessingRules.fermentationReady(600,true,true));
         check(!ProcessingRules.fermentationReady(599,true,true));
         check(ProcessingRules.refiningReady(200,6,true));

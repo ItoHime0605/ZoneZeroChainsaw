@@ -59,7 +59,7 @@ for name in ("chain_running", "chain_coast"):
     png = assets / "textures/item" / (name + ".png")
     assert png.is_file(), f"Missing animated texture: {name}"
     data = png.read_bytes()
-    assert data[:8] == b"\\x89PNG\\r\\n\\x1a\\n"
+    assert data[:8] == b"\x89PNG\r\n\x1a\n"
     assert struct.unpack(">II", data[16:24]) == (64, 256)
     meta = json.loads((assets / "textures/item" / (name + ".png.mcmeta")).read_text("utf-8"))
     assert meta["animation"]["frametime"] > 0

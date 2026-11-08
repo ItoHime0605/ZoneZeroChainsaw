@@ -28,6 +28,8 @@ jobs:
           mkdir -p build/logic-test
           javac -d build/logic-test src/main/java/tw/zonezero/chainsaw/logic/*.java src/test/java/tw/zonezero/chainsaw/logic/*.java
           java -ea -cp build/logic-test tw.zonezero.chainsaw.logic.LogicSmokeTest
+      - name: Validate 3D assets and localization
+        run: python3 tools/verify_assets.py
       - name: Compile mod
         run: gradle build --stacktrace --no-daemon
       - name: Upload developer build JAR

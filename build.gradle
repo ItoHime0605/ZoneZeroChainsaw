@@ -1,0 +1,16 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.78'
+}
+version = '0.1.1-alpha'
+group = 'tw.zonezero'
+base { archivesName = 'zonezero-chainsaw' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+neoForge {
+    version = '21.1.219'
+    runs {
+        client { client() }
+        server { server() }
+    }
+}
+repositories { mavenCentral() }

@@ -1,0 +1,9 @@
+{
+  "item.zonezero_chainsaw.chainsaw": "電鋸",
+  "item.zonezero_chainsaw.fermented_crude": "發酵原液",
+  "item.zonezero_chainsaw.biofuel_bottle": "生質燃油瓶",
+  "block.zonezero_chainsaw.fermentation_barrel": "發酵桶",
+  "block.zonezero_chainsaw.fuel_refinery": "燃油精製台",
+  "key.zonezero_chainsaw.toggle_engine": "啟動／關閉電鋸引擎",
+  "message.zonezero_chainsaw.no_fuel": "燃料不足，無法啟動電鋸。"
+}

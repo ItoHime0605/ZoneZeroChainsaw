@@ -1,0 +1,20 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+[[mods]]
+modId="zonezero_chainsaw"
+version="0.1.1-alpha"
+displayName="Zone Zero Chainsaw"
+description='''Animated chainsaw and biofuel processing for Zone Zero.'''
+[[dependencies.zonezero_chainsaw]]
+modId="neoforge"
+type="required"
+versionRange="[21.1,)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.zonezero_chainsaw]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,1.21.2)"
+ordering="NONE"
+side="BOTH"

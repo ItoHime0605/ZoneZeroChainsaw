@@ -1,6 +1,8 @@
 package tw.zonezero.chainsaw;
 
 import net.minecraft.core.Direction;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
@@ -12,6 +14,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 
 public final class FermentationBarrelBlock extends HorizontalDirectionalBlock {
+    public static final MapCodec<FermentationBarrelBlock> CODEC = simpleCodec(FermentationBarrelBlock::new);
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() { return CODEC; }
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
     public FermentationBarrelBlock(BlockBehaviour.Properties properties) {
         super(properties);

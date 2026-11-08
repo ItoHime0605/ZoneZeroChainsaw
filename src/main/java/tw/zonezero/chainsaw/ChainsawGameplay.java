@@ -100,6 +100,12 @@ public final class ChainsawGameplay {
         LivingEntity target = findTarget(player);
         if (target != null) {
             float damage = ZoneZeroChainsaw.damagePerHit(saw);
+            // Vanilla hurt immunity is longer than our 4-tick cutting interval.
+            // Clear the short immunity window only for an authorized blade contact.
+            // Otherwise repeated holding would silently hit once every ~10 ticks.
+            if (target.invulnerableTime > 0 && !target.isInvulnerable()) {
+                target.invulnerableTime = 0;
+            }
             if (target.hurt(player.damageSources().playerAttack(player), damage)) {
                 target.knockback(0.12, player.getX() - target.getX(), player.getZ() - target.getZ());
             }
@@ -107,6 +113,14 @@ public final class ChainsawGameplay {
         if (ZoneZeroChainsaw.fuel(saw) == 0) {
             ZoneZeroChainsaw.setEngineOn(saw, false);
             player.displayClientMessage(Component.translatable("message.zonezero_chainsaw.empty"), true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void logout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+        InputState state = INPUTS.remove(event.getEntity().getUUID());
+        if (state != null && state.lastSaw.is(ZoneZeroChainsaw.CHAINSAW.get())) {
+            ZoneZeroChainsaw.setEngineOn(state.lastSaw, false);
         }
     }
 

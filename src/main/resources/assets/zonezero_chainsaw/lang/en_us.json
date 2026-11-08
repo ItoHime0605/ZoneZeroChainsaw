@@ -24,5 +24,13 @@
   "hud.zonezero_chainsaw.fuel": "Fuel %s / %s",
   "message.zonezero_chainsaw.offhand_required": "Free your offhand before you can wield the chainsaw.",
   "message.zonezero_chainsaw.offhand_interrupt": "Offhand occupied; chainsaw engine stopped.",
-  "tooltip.zonezero_chainsaw.offhand": "Two-handed tool: free your offhand to wield and operate."
+  "tooltip.zonezero_chainsaw.offhand": "Two-handed tool: free your offhand to wield and operate.",
+  "hud.zonezero_chainsaw.compact_title": "CHAINSAW  LV.%s",
+  "hud.zonezero_chainsaw.blocked": "BLOCK",
+  "hud.zonezero_chainsaw.running": "RUN",
+  "hud.zonezero_chainsaw.stopped": "OFF",
+  "hud.zonezero_chainsaw.unit": "FUEL",
+  "hud.zonezero_chainsaw.free_hand": "FREE OFFHAND TO WIELD",
+  "hud.zonezero_chainsaw.hold_cut": "HOLD LMB TO CUT",
+  "hud.zonezero_chainsaw.press_r": "PRESS R TO START"
 }

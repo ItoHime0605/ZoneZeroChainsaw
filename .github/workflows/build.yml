@@ -42,6 +42,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: zonezero-chainsaw-0.1.12-alpha-dev
+          name: zonezero-chainsaw-0.1.13-alpha-dev
           path: build/libs/*.jar
           if-no-files-found: error

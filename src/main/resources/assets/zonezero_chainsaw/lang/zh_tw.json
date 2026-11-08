@@ -26,5 +26,13 @@
   "hud.zonezero_chainsaw.fuel": "燃油 %s / %s",
   "message.zonezero_chainsaw.offhand_required": "左手必須空出，才能拿得動電鋸。",
   "message.zonezero_chainsaw.offhand_interrupt": "左手拿了其他東西，電鋸已熄火。",
-  "tooltip.zonezero_chainsaw.offhand": "雙手工具：左手空出才能持握、啟動與切割。"
+  "tooltip.zonezero_chainsaw.offhand": "雙手工具：左手空出才能持握、啟動與切割。",
+  "hud.zonezero_chainsaw.compact_title": "電鋸  LV.%s",
+  "hud.zonezero_chainsaw.blocked": "鎖定",
+  "hud.zonezero_chainsaw.running": "運轉",
+  "hud.zonezero_chainsaw.stopped": "熄火",
+  "hud.zonezero_chainsaw.unit": "燃油",
+  "hud.zonezero_chainsaw.free_hand": "左手必須空出才能持鋸",
+  "hud.zonezero_chainsaw.hold_cut": "按住左鍵持續切割",
+  "hud.zonezero_chainsaw.press_r": "按 R 啟動引擎"
 }

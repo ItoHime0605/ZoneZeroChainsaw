@@ -45,6 +45,19 @@ public final class ChainsawUpgradeRules {
         return !materialId(targetTier).isEmpty();
     }
 
+    /** Only materials used by actual recipes can enter the upgrade station. */
+    public static boolean isAllowedIngredient(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        if (stack.is(ZoneZeroChainsaw.FUEL.get())
+                || stack.getItem() instanceof DyeItem) return true;
+        String id = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+        for (int tier=0;tier<MATERIAL_IDS.length;tier++) {
+            String material = materialId(tier);
+            if (!material.isEmpty() && material.equals(id)) return true;
+        }
+        return false;
+    }
+
     public static boolean isDyeOperation(ItemStack[] ingredients) {
         if (ingredients == null || ingredients.length != 3) return false;
         int dyes = 0;

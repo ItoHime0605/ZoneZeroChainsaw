@@ -1,33 +1,55 @@
 {
   "start": {
+    "subtitle": "subtitles.zonezero_chainsaw.start",
     "sounds": [
       {
         "name": "zonezero_chainsaw:start",
-        "volume": 0.8
+        "volume": 0.92
       }
     ]
   },
   "engine": {
+    "subtitle": "subtitles.zonezero_chainsaw.engine",
     "sounds": [
       {
         "name": "zonezero_chainsaw:engine",
-        "volume": 0.52
+        "volume": 0.88
       }
     ]
   },
   "cut": {
+    "subtitle": "subtitles.zonezero_chainsaw.cut",
     "sounds": [
       {
         "name": "zonezero_chainsaw:cut",
-        "volume": 0.65
+        "volume": 0.89
+      }
+    ]
+  },
+  "contact": {
+    "subtitle": "subtitles.zonezero_chainsaw.contact",
+    "sounds": [
+      {
+        "name": "zonezero_chainsaw:contact",
+        "volume": 0.85
       }
     ]
   },
   "stop": {
+    "subtitle": "subtitles.zonezero_chainsaw.stop",
     "sounds": [
       {
         "name": "zonezero_chainsaw:stop",
-        "volume": 0.7
+        "volume": 0.91
+      }
+    ]
+  },
+  "stall": {
+    "subtitle": "subtitles.zonezero_chainsaw.stall",
+    "sounds": [
+      {
+        "name": "zonezero_chainsaw:stall",
+        "volume": 0.89
       }
     ]
   }

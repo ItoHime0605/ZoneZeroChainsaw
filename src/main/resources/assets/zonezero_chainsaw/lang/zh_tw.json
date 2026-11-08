@@ -34,5 +34,11 @@
   "hud.zonezero_chainsaw.unit": "燃油",
   "hud.zonezero_chainsaw.free_hand": "左手必須空出才能持鋸",
   "hud.zonezero_chainsaw.hold_cut": "按住左鍵持續切割",
-  "hud.zonezero_chainsaw.press_r": "按 R 啟動引擎"
+  "hud.zonezero_chainsaw.press_r": "按 R 啟動引擎",
+  "subtitles.zonezero_chainsaw.start": "電鋸引擎啟動",
+  "subtitles.zonezero_chainsaw.engine": "電鋸引擎運轉",
+  "subtitles.zonezero_chainsaw.cut": "鋸鏈高速運轉",
+  "subtitles.zonezero_chainsaw.contact": "電鋸切割命中",
+  "subtitles.zonezero_chainsaw.stop": "電鋸引擎熄火",
+  "subtitles.zonezero_chainsaw.stall": "電鋸燃料耗盡"
 }

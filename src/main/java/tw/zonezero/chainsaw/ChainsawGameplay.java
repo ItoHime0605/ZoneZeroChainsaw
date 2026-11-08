@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import tw.zonezero.chainsaw.logic.SustainedCutLogic;
+import tw.zonezero.chainsaw.logic.ChainsawAudioTiming;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,6 +31,8 @@ public final class ChainsawGameplay {
         long lastHeldTick = -1000;
         int heldTicks;
         long startedAt;
+        long lastCutAudioAt = ChainsawAudioTiming.NONE;
+        long lastContactAudioAt = ChainsawAudioTiming.NONE;
         ItemStack lastSaw = ItemStack.EMPTY;
     }
     private static final Map<UUID, InputState> INPUTS = new HashMap<>();
@@ -45,6 +48,7 @@ public final class ChainsawGameplay {
         }
         InputState input = INPUTS.computeIfAbsent(player.getUUID(), id -> new InputState());
         input.lastSaw = saw;
+        // Repeated held packets never reschedule or duplicate a sound loop.
         if (action == 1) {
             boolean next = !ZoneZeroChainsaw.isEngineOn(saw);
             // Both hands are mandatory. A fuel can in the offhand can be used
@@ -64,6 +68,8 @@ public final class ChainsawGameplay {
             }
             ZoneZeroChainsaw.setEngineOn(saw, next);
             ZoneZeroChainsaw.setCutting(saw, false);
+            input.lastCutAudioAt = ChainsawAudioTiming.NONE;
+            input.lastContactAudioAt = ChainsawAudioTiming.NONE;
             if (next) {
                 ZoneZeroChainsaw.setCoastUntil(saw, 0);
                 input.startedAt = player.level().getGameTime();
@@ -87,11 +93,15 @@ public final class ChainsawGameplay {
             } else {
                 input.heldTicks = 0;
                 input.lastHeldTick = -1000;
+                input.lastCutAudioAt = ChainsawAudioTiming.NONE;
+                input.lastContactAudioAt = ChainsawAudioTiming.NONE;
                 ZoneZeroChainsaw.setCutting(saw, false);
             }
         } else {
             input.lastHeldTick = -1000;
             input.heldTicks = 0;
+            input.lastCutAudioAt = ChainsawAudioTiming.NONE;
+            input.lastContactAudioAt = ChainsawAudioTiming.NONE;
             ZoneZeroChainsaw.setCutting(saw, false);
         }
     }
@@ -105,7 +115,15 @@ public final class ChainsawGameplay {
         ItemStack saw = player.getMainHandItem();
         if (!player.isAlive() || !saw.is(ZoneZeroChainsaw.CHAINSAW.get()) || saw != input.lastSaw) {
             if (!input.lastSaw.isEmpty() && input.lastSaw.is(ZoneZeroChainsaw.CHAINSAW.get())) {
+                boolean wasOn = ZoneZeroChainsaw.isEngineOn(input.lastSaw);
                 ZoneZeroChainsaw.setEngineOn(input.lastSaw, false);
+                ZoneZeroChainsaw.setCoastUntil(input.lastSaw,
+                        player.level().getGameTime() + 40);
+                if (wasOn && player.isAlive()) {
+                    player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                            ZoneZeroChainsaw.SOUND_STOP.get(),
+                            net.minecraft.sounds.SoundSource.PLAYERS, 0.60f, 1.0f);
+                }
             }
             INPUTS.remove(id);
             return;
@@ -125,32 +143,53 @@ public final class ChainsawGameplay {
             }
             input.heldTicks = 0;
             input.lastHeldTick = -1000;
+            input.lastCutAudioAt = ChainsawAudioTiming.NONE;
+            input.lastContactAudioAt = ChainsawAudioTiming.NONE;
             return;
         }
         if (!ZoneZeroChainsaw.isEngineOn(saw)) {
             input.heldTicks = 0;
+            input.lastCutAudioAt = ChainsawAudioTiming.NONE;
+            input.lastContactAudioAt = ChainsawAudioTiming.NONE;
             return;
         }
         if (ZoneZeroChainsaw.fuel(saw) <= 0) {
             ZoneZeroChainsaw.setEngineOn(saw, false);
             ZoneZeroChainsaw.setCoastUntil(saw, player.level().getGameTime() + 40);
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                    ZoneZeroChainsaw.SOUND_STALL.get(),
+                    net.minecraft.sounds.SoundSource.PLAYERS, 0.66f, 1.0f);
             input.heldTicks = 0;
+            input.lastCutAudioAt = ChainsawAudioTiming.NONE;
+            input.lastContactAudioAt = ChainsawAudioTiming.NONE;
             return;
         }
         long tick = player.level().getGameTime();
-        // Short one-shot engine clips repeat seamlessly while powered; nearby
-        // players hear the engine from the actual server-side player's location.
-        if (tick - input.startedAt >= 16 && (tick - input.startedAt) % 12 == 0) {
+        // Start clip lasts exactly 18 ticks; periodic motor clips then start
+        // at 18, 30, 42... ticks. All sounds are spatial, server-authoritative
+        // and use vanilla PLAYERS-category distance attenuation.
+        if (ChainsawAudioTiming.engineClip(tick, input.startedAt)) {
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                     ZoneZeroChainsaw.SOUND_ENGINE.get(),
-                    net.minecraft.sounds.SoundSource.PLAYERS, 0.46f, 1.0f);
+                    net.minecraft.sounds.SoundSource.PLAYERS, 0.40f, 1.0f);
         }
         if (!SustainedCutLogic.shouldCut(tick, input.lastHeldTick,
                 ZoneZeroChainsaw.isEngineOn(saw), player.getOffhandItem().isEmpty(),
                 ZoneZeroChainsaw.fuel(saw))) {
             input.heldTicks = 0;
+            input.lastCutAudioAt = ChainsawAudioTiming.NONE;
+            input.lastContactAudioAt = ChainsawAudioTiming.NONE;
             ZoneZeroChainsaw.setCutting(saw, false);
             return;
+        }
+        // Cut audio has its OWN clock. It begins once on a held attack and
+        // repeats every eight ticks; it must not depend on 4-tick hit cadence.
+        if (ChainsawAudioTiming.clipDue(tick, input.lastCutAudioAt,
+                ChainsawAudioTiming.CUT_INTERVAL)) {
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                    ZoneZeroChainsaw.SOUND_CUT.get(),
+                    net.minecraft.sounds.SoundSource.PLAYERS, 0.47f, 1.0f);
+            input.lastCutAudioAt = tick;
         }
         // Hold the continuous pose indefinitely while input is refreshed.
         // Only fuel/damage pulse every four ticks; never trigger a new swing.
@@ -161,11 +200,6 @@ public final class ChainsawGameplay {
         net.minecraft.world.item.component.CustomData.update(
                 net.minecraft.core.component.DataComponents.CUSTOM_DATA,
                 saw, tag -> tag.putLong("ChainsawCuttingAt", tick));
-        if ((tick & 7L) == 0L) {
-            player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                    ZoneZeroChainsaw.SOUND_CUT.get(),
-                    net.minecraft.sounds.SoundSource.PLAYERS, 0.54f, 0.96f);
-        }
         LivingEntity target = findTarget(player);
         if (target != null) {
             float damage = ZoneZeroChainsaw.damagePerHit(saw);
@@ -177,14 +211,25 @@ public final class ChainsawGameplay {
             }
             if (target.hurt(player.damageSources().playerAttack(player), damage)) {
                 target.knockback(0.12, player.getX() - target.getX(), player.getZ() - target.getZ());
+                if (ChainsawAudioTiming.clipDue(tick, input.lastContactAudioAt,
+                        ChainsawAudioTiming.CONTACT_COOLDOWN)) {
+                    // Sound at the actual contact target, NOT the attacker's
+                    // ears. This remains one short hit clip per six ticks.
+                    player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                            ZoneZeroChainsaw.SOUND_CONTACT.get(),
+                            net.minecraft.sounds.SoundSource.PLAYERS, 0.49f, 1.0f);
+                    input.lastContactAudioAt = tick;
+                }
             }
         }
         if (ZoneZeroChainsaw.fuel(saw) == 0) {
             ZoneZeroChainsaw.setEngineOn(saw, false);
             ZoneZeroChainsaw.setCoastUntil(saw, tick + 40);
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                    ZoneZeroChainsaw.SOUND_STOP.get(),
-                    net.minecraft.sounds.SoundSource.PLAYERS, 0.7f, 0.8f);
+                    ZoneZeroChainsaw.SOUND_STALL.get(),
+                    net.minecraft.sounds.SoundSource.PLAYERS, 0.66f, 1.0f);
+            input.lastCutAudioAt = ChainsawAudioTiming.NONE;
+            input.lastContactAudioAt = ChainsawAudioTiming.NONE;
             player.displayClientMessage(Component.translatable("message.zonezero_chainsaw.empty"), true);
         }
     }

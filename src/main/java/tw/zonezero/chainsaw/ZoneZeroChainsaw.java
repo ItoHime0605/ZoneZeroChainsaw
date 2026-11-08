@@ -45,6 +45,12 @@ public final class ZoneZeroChainsaw {
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> SOUND_STOP =
             SOUNDS.register("stop", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(
                     net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, "stop")));
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> SOUND_CONTACT =
+            SOUNDS.register("contact", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, "contact")));
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> SOUND_STALL =
+            SOUNDS.register("stall", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, "stall")));
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredBlock<Block> FERMENTER = BLOCKS.register("fermentation_barrel", () -> new FermentationBarrelBlock(BlockBehaviour.Properties.of().strength(3.0f, 6.0f).sound(SoundType.WOOD)));

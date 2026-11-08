@@ -32,5 +32,11 @@
   "hud.zonezero_chainsaw.unit": "FUEL",
   "hud.zonezero_chainsaw.free_hand": "FREE OFFHAND TO WIELD",
   "hud.zonezero_chainsaw.hold_cut": "HOLD LMB TO CUT",
-  "hud.zonezero_chainsaw.press_r": "PRESS R TO START"
+  "hud.zonezero_chainsaw.press_r": "PRESS R TO START",
+  "subtitles.zonezero_chainsaw.start": "Chainsaw engine starts",
+  "subtitles.zonezero_chainsaw.engine": "Chainsaw engine runs",
+  "subtitles.zonezero_chainsaw.cut": "Chainsaw chain spins rapidly",
+  "subtitles.zonezero_chainsaw.contact": "Chainsaw makes contact",
+  "subtitles.zonezero_chainsaw.stop": "Chainsaw engine shuts down",
+  "subtitles.zonezero_chainsaw.stall": "Chainsaw runs out of fuel"
 }

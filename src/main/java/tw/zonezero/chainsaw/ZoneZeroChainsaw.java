@@ -127,6 +127,26 @@ public final class ZoneZeroChainsaw {
                 tag -> tag.putBoolean("ChainsawEngineOn", on));
     }
 
+    /**
+     * Reset transient state from inventory movement, relog or death. Keep
+     * ChainsawFuel, ChainsawTier, ChainsawColor and all custom components.
+     * Only writes NBT when a value actually needs clearing.
+     */
+    public static void clearRuntimeState(ItemStack stack) {
+        if (!stack.is(CHAINSAW.get())) return;
+        CustomData old = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        net.minecraft.nbt.CompoundTag tag = old.copyTag();
+        if (!tag.getBoolean("ChainsawEngineOn") && !tag.getBoolean("ChainsawCutting")
+                && tag.getLong("ChainsawCoastUntil") == 0
+                && tag.getLong("ChainsawCuttingAt") == 0) return;
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, nbt -> {
+            nbt.remove("ChainsawEngineOn");
+            nbt.remove("ChainsawCutting");
+            nbt.remove("ChainsawCoastUntil");
+            nbt.remove("ChainsawCuttingAt");
+        });
+    }
+
     /** Game-time based two-second motor coast after manual or automatic shutdown. */
     public static void setCoastUntil(ItemStack stack, long worldTick) {
         CustomData.update(DataComponents.CUSTOM_DATA, stack,

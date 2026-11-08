@@ -14,6 +14,18 @@ public final class ChainsawItem extends Item {
     }
 
     @Override
+    public void inventoryTick(ItemStack stack, net.minecraft.world.level.Level level,
+                              net.minecraft.world.entity.Entity entity,
+                              int slotId, boolean isSelected) {
+        // Even if the player puts a running saw into a chest via a fast click,
+        // it cannot resume itself when placed in another inventory slot.
+        if (!level.isClientSide && entity instanceof net.minecraft.world.entity.player.Player player
+                && player.getMainHandItem() != stack) {
+            ZoneZeroChainsaw.clearRuntimeState(stack);
+        }
+    }
+
+    @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         int fuel = ZoneZeroChainsaw.fuel(stack);
         int capacity = ZoneZeroChainsaw.fuelCapacity(stack);

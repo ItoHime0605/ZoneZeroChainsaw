@@ -106,8 +106,12 @@ public final class ChainsawUpgradeRules {
                 kinds[i] = UpgradePlanLogic.INVALID;
             }
         }
-        return UpgradePlanLogic.match(tier, ZoneZeroChainsaw.dyeColor(saw),
-                kinds, counts, colors);
+        // An undyed saw is orange, not DyeColor.WHITE (ID 0).
+        // Only explicit NBT colors should count as an existing dye.
+        int currentColor = saw.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                .copyTag().contains("ChainsawColor")
+                    ? ZoneZeroChainsaw.dyeColor(saw) : -1;
+        return UpgradePlanLogic.match(tier, currentColor, kinds, counts, colors);
     }
 
     /** The preview is a COPY, never the original input saw stack. */

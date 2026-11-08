@@ -32,7 +32,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y ffmpeg
-      - name: Generate original audio and chain animation
+      - name: Generate original audio, 16 dyes and independent model materials
         run: python3 tools/generate_media.py
       - name: Validate 3D assets and localization
         run: python3 tools/verify_assets.py
@@ -42,6 +42,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: zonezero-chainsaw-0.1.18-alpha-dev
+          name: zonezero-chainsaw-0.1.19-alpha-dev
           path: build/libs/*.jar
           if-no-files-found: error

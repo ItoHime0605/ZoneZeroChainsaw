@@ -16,12 +16,15 @@ colors = (
 )
 base = json.loads((root / "chainsaw_base.json").read_text("utf-8"))
 config = json.loads((root / "chainsaw.json").read_text("utf-8"))
-assert len(base["elements"]) >= 85, "The full detailed 3D model is missing"
+assert len(base["elements"]) == 120, "The full redesigned 120-piece model is missing"
 assert len(config["overrides"]) == 67, "Missing idle/running/cutting/coast model combinations"
 for element in base["elements"]:
     assert all(-16 <= f < t <= 32 for f, t in zip(element["from"], element["to"]))
     for face in element["faces"].values():
         assert face["texture"][1:] in base["textures"]
+        if "uv" in face:
+            assert len(face["uv"]) == 4 and all(0 <= n <= 16 for n in face["uv"])
+
 
 def check_texture(tex):
     ns, path = tex.split(":")
@@ -54,6 +57,30 @@ body = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#orang
 blade = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#guide"]
 assert min(e["from"][0] for e in blade) < -8, "Guide bar has shrunk"
 assert max(e["to"][0] for e in body) - min(e["from"][0] for e in body) < 9, "Body too thick"
+# Preserve the calibrated animation hand anchors while replacing the mesh.
+# The new front transverse U is visibly squared and braced rearward.
+rear = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#rubber"
+        and e["from"][0] > 17.4 and e["from"][1] <= 6.5]
+front = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#rubber"
+         and 6.7 < e["from"][0] < 8 and e["to"][1] >= 13.55]
+guards = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#rubber"
+          and 9.2 < e["from"][0] < 10.0 and e["to"][1] >= 13.0]
+assert rear and front and guards, "Rear grip or extended front U handle missing"
+assert (min(e["from"][0] for e in blade) < -8.5
+        and max(e["to"][0] for e in blade) > 6), "Guide bar too short"
+
+# Every color uses the original cast-panel art, while the guide, chain,
+# rubber, vent and rivets have their own independently drawn materials.
+original_materials = ("guide_blood_v3", "chain_graphite_v3", "metal_cast_v3",
+    "rubber_grip_v3", "vent_cast_v3", "cap_steel_v3",
+    "frame_black_v3", "bolt_steel_v3")
+assert len(original_materials) == 8
+for name in original_materials:
+    check_texture("zonezero_chainsaw:item/" + name)
+for color in colors:
+    check_texture("zonezero_chainsaw:item/housing_" + color)
+assert Path("tools/generate_chainsaw_art.py").is_file()
+
 # All states MUST share the same first-person transform. The held
 # input smoothly advances the PoseStack instead; never jump models per hit.
 firstperson = ("firstperson_righthand", "firstperson_lefthand")

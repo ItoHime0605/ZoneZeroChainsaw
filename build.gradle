@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.78'
 }
-version = '0.1.18-alpha'
+version = '0.1.19-alpha'
 group = 'tw.zonezero'
 base { archivesName = 'zonezero-chainsaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -26,13 +26,18 @@ tasks.register('generateChainsawMedia', Exec) {
     def executable = System.getProperty('os.name').toLowerCase().contains('windows') ? 'python' : 'python3'
     commandLine executable, 'tools/generate_media.py'
     inputs.file 'tools/generate_media.py'
+    inputs.file 'tools/generate_chainsaw_art.py'
     outputs.files(
         file('src/main/resources/assets/zonezero_chainsaw/sounds/start.ogg'),
         file('src/main/resources/assets/zonezero_chainsaw/sounds/engine.ogg'),
         file('src/main/resources/assets/zonezero_chainsaw/sounds/cut.ogg'),
         file('src/main/resources/assets/zonezero_chainsaw/sounds/stop.ogg'),
         file('src/main/resources/assets/zonezero_chainsaw/textures/item/chain_running.png'),
-        file('src/main/resources/assets/zonezero_chainsaw/textures/item/chain_coast.png')
+        file('src/main/resources/assets/zonezero_chainsaw/textures/item/chain_coast.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/item/guide_blood_v3.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/item/housing_orange.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/item/housing_black.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/item/vent_cast_v3.png')
     )
 }
 tasks.named('processResources') {

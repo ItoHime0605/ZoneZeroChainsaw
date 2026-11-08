@@ -11,6 +11,8 @@ import subprocess
 import tempfile
 import wave
 import zlib
+
+from generate_chainsaw_art import generate as generate_original_textures
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "src/main/resources/assets/zonezero_chainsaw"
@@ -135,4 +137,5 @@ def texture():
 if __name__ == "__main__":
     audio()
     texture()
-    print("Generated four original OGG effects and two 4-frame animated chain textures.")
+    generate_original_textures(TEXTURES)
+    print("Generated original OGG effects, animated chain textures, and 24 unique pixel-art materials.")

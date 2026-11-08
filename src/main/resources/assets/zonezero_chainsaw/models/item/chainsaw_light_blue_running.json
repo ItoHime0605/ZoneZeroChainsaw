@@ -2,5 +2,75 @@
   "parent": "zonezero_chainsaw:item/chainsaw_light_blue",
   "textures": {
     "chain": "zonezero_chainsaw:item/chain_running"
+  },
+  "display": {
+    "firstperson_righthand": {
+      "rotation": [
+        -3,
+        -68,
+        -8
+      ],
+      "translation": [
+        -2.1,
+        3.8,
+        -0.35
+      ],
+      "scale": [
+        0.58,
+        0.58,
+        0.58
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        -3,
+        68,
+        8
+      ],
+      "translation": [
+        2.1,
+        3.8,
+        -0.35
+      ],
+      "scale": [
+        0.58,
+        0.58,
+        0.58
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "translation": [
+        0.35,
+        1.8,
+        -1.3
+      ],
+      "scale": [
+        0.58,
+        0.58,
+        0.58
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        -0.35,
+        1.8,
+        -1.3
+      ],
+      "scale": [
+        0.58,
+        0.58,
+        0.58
+      ]
+    }
   }
 }

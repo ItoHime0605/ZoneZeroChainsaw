@@ -40,17 +40,31 @@ public final class ZoneZeroChainsaw {
         ITEMS.register(bus);
     }
 
-    // The production input/packet and refilling flow is not yet connected.
+    public static int tier(ItemStack stack) {
+        return Math.clamp(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getInt("ChainsawTier"), 0, 2);
+    }
+    public static int fuelCapacity(ItemStack stack) { return 1800 + 600 * tier(stack); }
+    public static int damagePerHit(ItemStack stack) { return 2 + tier(stack); }
+    public static int dyeColor(ItemStack stack) {
+        return Math.clamp(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getInt("ChainsawColor"), 0, 15);
+    }
+    public static void setTier(ItemStack stack, int value) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt("ChainsawTier", Math.clamp(value, 0, 2)));
+    }
+    public static void setDyeColor(ItemStack stack, int value) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt("ChainsawColor", Math.clamp(value, 0, 15)));
+    }
+
     public static int fuel(ItemStack stack) {
         CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-        return Math.clamp(data.copyTag().getInt("ChainsawFuel"), 0, 1800);
+        return Math.clamp(data.copyTag().getInt("ChainsawFuel"), 0, fuelCapacity(stack));
     }
     public static void setFuel(ItemStack stack, int value) {
         CustomData.update(DataComponents.CUSTOM_DATA, stack,
-                tag -> tag.putInt("ChainsawFuel", Math.clamp(value, 0, 1800)));
+                tag -> tag.putInt("ChainsawFuel", Math.clamp(value, 0, fuelCapacity(stack))));
     }
     public static int refill(ItemStack stack) {
-        int added = Math.min(600, 1800 - fuel(stack));
+        int added = Math.min(600, fuelCapacity(stack) - fuel(stack));
         if (added > 0) setFuel(stack, fuel(stack) + added);
         return added;
     }

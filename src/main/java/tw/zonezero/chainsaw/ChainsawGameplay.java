@@ -288,6 +288,18 @@ public final class ChainsawGameplay {
     }
 
     @SubscribeEvent
+    public static void changedDimension(
+            net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        // A teleported player should never carry active remote sound/animation
+        // state between dimensions or into Personal Shelter instances.
+        InputState state = INPUTS.remove(player.getUUID());
+        if (state != null && state.lastSaw.is(ZoneZeroChainsaw.CHAINSAW.get()))
+            ZoneZeroChainsaw.clearRuntimeState(state.lastSaw);
+        clearInventoryRuntime(player);
+    }
+
+    @SubscribeEvent
     public static void respawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         INPUTS.remove(player.getUUID());

@@ -54,7 +54,20 @@ body = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#orang
 blade = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#guide"]
 assert min(e["from"][0] for e in blade) < -8, "Guide bar has shrunk"
 assert max(e["to"][0] for e in body) - min(e["from"][0] for e in body) < 9, "Body too thick"
-assert base["display"]["firstperson_righthand"]["scale"][0] <= .5
+# Catch the bug in 0.1.13: the held saw was virtually out of view.
+for hand in ("firstperson_righthand", "firstperson_lefthand"):
+    t = base["display"][hand]
+    assert 2.5 <= t["translation"][1] <= 6.0, "Idle chainsaw below viewport"
+    assert .50 <= t["scale"][0] <= .64, "Idle chainsaw tiny or oversized"
+active = json.loads((root / "chainsaw_active.json").read_text("utf-8"))
+for hand in ("firstperson_righthand", "firstperson_lefthand"):
+    t = active["display"][hand]
+    assert 3.0 <= t["translation"][1] <= 6.0, "Cutting chainsaw below viewport"
+    assert .50 <= t["scale"][0] <= .64, "Cutting chainsaw tiny or oversized"
+for color in colors:
+    model = json.loads((root / f"chainsaw_{color}_active.json").read_text("utf-8"))
+    for hand in ("firstperson_righthand", "firstperson_lefthand"):
+        assert model["display"][hand] == active["display"][hand], (color, hand)
 for name in ("chain_running", "chain_coast"):
     png = assets / "textures/item" / (name + ".png")
     assert png.is_file(), f"Missing animated texture: {name}"

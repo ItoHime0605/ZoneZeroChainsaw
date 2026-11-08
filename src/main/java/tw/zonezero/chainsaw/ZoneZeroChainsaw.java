@@ -43,15 +43,15 @@ public final class ZoneZeroChainsaw {
     }
 
     public static int tier(ItemStack stack) {
-        return Math.clamp(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getInt("ChainsawTier"), 0, 2);
+        return Math.clamp(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getInt("ChainsawTier"), 0, 5);
     }
-    public static int fuelCapacity(ItemStack stack) { return 1800 + 600 * tier(stack); }
-    public static int damagePerHit(ItemStack stack) { return 2 + tier(stack); }
+    public static int fuelCapacity(ItemStack stack) { return Math.min(3000, 600 * (tier(stack) + 1)); }
+    public static int damagePerHit(ItemStack stack) { return new int[] {2, 3, 4, 6, 8, 10}[tier(stack)]; }
     public static int dyeColor(ItemStack stack) {
         return Math.clamp(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getInt("ChainsawColor"), 0, 15);
     }
     public static void setTier(ItemStack stack, int value) {
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt("ChainsawTier", Math.clamp(value, 0, 2)));
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt("ChainsawTier", Math.clamp(value, 0, 5)));
     }
     public static void setDyeColor(ItemStack stack, int value) {
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt("ChainsawColor", Math.clamp(value, 0, 15)));

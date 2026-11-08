@@ -6,5 +6,18 @@
   "block.zonezero_chainsaw.fuel_refinery": "Fuel Refinery",
   "itemGroup.zonezero_chainsaw": "Zone Zero | Chainsaws",
   "block.zonezero_chainsaw.chainsaw_upgrade_station": "Chainsaw Upgrade Station",
-  "container.zonezero_chainsaw.chainsaw_upgrade": "Chainsaw Upgrade Station"
+  "container.zonezero_chainsaw.chainsaw_upgrade": "Chainsaw Upgrade Station",
+  "key.categories.zonezero_chainsaw": "Zone Zero | Chainsaws",
+  "tooltip.zonezero_chainsaw.description": "A reconstructed biofuel chainsaw for sustained close-range cutting.",
+  "tooltip.zonezero_chainsaw.level": "Upgrade tier: Lv.%s",
+  "tooltip.zonezero_chainsaw.damage": "Cutting damage: %s every 4 ticks",
+  "tooltip.zonezero_chainsaw.fuel": "Fuel remaining: %s / %s",
+  "tooltip.zonezero_chainsaw.engine": "Engine: %s",
+  "tooltip.zonezero_chainsaw.engine_on": "Running",
+  "tooltip.zonezero_chainsaw.engine_off": "Stopped",
+  "tooltip.zonezero_chainsaw.controls": "R starts/stops the engine; hold left click to cut.",
+  "tooltip.zonezero_chainsaw.refuel": "Refuel: fuel can in opposite hand, right-click air.",
+  "message.zonezero_chainsaw.engine_on": "Chainsaw engine started",
+  "message.zonezero_chainsaw.engine_off": "Chainsaw engine stopped",
+  "message.zonezero_chainsaw.empty": "Fuel exhausted; engine stopped."
 }

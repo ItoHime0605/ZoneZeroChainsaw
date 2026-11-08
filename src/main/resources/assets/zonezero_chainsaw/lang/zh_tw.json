@@ -8,5 +8,18 @@
   "message.zonezero_chainsaw.no_fuel": "燃料不足，無法啟動電鋸。",
   "itemGroup.zonezero_chainsaw": "零號禁區｜動力電鋸",
   "block.zonezero_chainsaw.chainsaw_upgrade_station": "電鋸升級檯",
-  "container.zonezero_chainsaw.chainsaw_upgrade": "電鋸升級檯"
+  "container.zonezero_chainsaw.chainsaw_upgrade": "電鋸升級檯",
+  "key.categories.zonezero_chainsaw": "零號禁區｜動力電鋸",
+  "tooltip.zonezero_chainsaw.description": "一把改造過的生質燃油電鋸，能持續切割並擊退敵人。",
+  "tooltip.zonezero_chainsaw.level": "強化等級：Lv.%s",
+  "tooltip.zonezero_chainsaw.damage": "切割傷害：每 4 tick %s 點",
+  "tooltip.zonezero_chainsaw.fuel": "剩餘燃油：%s / %s",
+  "tooltip.zonezero_chainsaw.engine": "引擎：%s",
+  "tooltip.zonezero_chainsaw.engine_on": "運轉中",
+  "tooltip.zonezero_chainsaw.engine_off": "已熄火",
+  "tooltip.zonezero_chainsaw.controls": "按 R 啟動／熄火；啟動後按住左鍵持續切割。",
+  "tooltip.zonezero_chainsaw.refuel": "補油：另一手拿燃油瓶，對著空氣按右鍵。",
+  "message.zonezero_chainsaw.engine_on": "電鋸引擎啟動",
+  "message.zonezero_chainsaw.engine_off": "電鋸引擎熄火",
+  "message.zonezero_chainsaw.empty": "燃油耗盡，電鋸已熄火。"
 }

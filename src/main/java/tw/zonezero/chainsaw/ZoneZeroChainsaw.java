@@ -41,13 +41,14 @@ public final class ZoneZeroChainsaw {
     public static final DeferredItem<BlockItem> REFINERY_ITEM = ITEMS.registerSimpleBlockItem("fuel_refinery", REFINERY);
     public static final DeferredItem<Item> CRUDE = ITEMS.registerSimpleItem("fermented_crude", new Item.Properties());
     public static final DeferredItem<Item> FUEL = ITEMS.register("biofuel_bottle", () -> new BiofuelCanItem(new Item.Properties().stacksTo(16)));
-    public static final DeferredItem<Item> CHAINSAW = ITEMS.registerSimpleItem("chainsaw", new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> CHAINSAW = ITEMS.register("chainsaw", () -> new ChainsawItem(new Item.Properties().stacksTo(1)));
 
     public ZoneZeroChainsaw(IEventBus bus) {
         BLOCKS.register(bus);
         MENUS.register(bus);
         ITEMS.register(bus);
         ChainsawCreativeTabs.TABS.register(bus);
+        bus.addListener(ChainsawControlPacket::register);
     }
 
     public static int tier(ItemStack stack) {
@@ -77,5 +78,14 @@ public final class ZoneZeroChainsaw {
         int added = Math.min(600, fuelCapacity(stack) - fuel(stack));
         if (added > 0) setFuel(stack, fuel(stack) + added);
         return added;
+    }
+    public static boolean isEngineOn(ItemStack stack) {
+        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                .copyTag().getBoolean("ChainsawEngineOn");
+    }
+
+    public static void setEngineOn(ItemStack stack, boolean on) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack,
+                tag -> tag.putBoolean("ChainsawEngineOn", on));
     }
 }

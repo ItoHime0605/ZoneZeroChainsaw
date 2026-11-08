@@ -39,7 +39,7 @@ public final class UpgradePlanLogic {
             if (quantity[i] < 0) return Plan.invalid();
             if (kind[i] == EMPTY) {
                 if (quantity[i] != 0) return Plan.invalid();
-            } else if (quantity[i] == MATERIAL) {
+            } else if (kind[i] == MATERIAL) {
                 if (quantity[i] <= 0) return Plan.invalid();
                 materials += quantity[i];
             } else if (kind[i] == FUEL) {

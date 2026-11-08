@@ -1,35 +1,56 @@
 package tw.zonezero.chainsaw;
 
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.component.CustomData;
+import tw.zonezero.chainsaw.logic.UpgradePlanLogic;
 
-/** Pure transaction validation for the upgrade station's three material slots. */
+/**
+ * One authoritative result per valid 3-slot transaction.
+ *
+ * External material IDs are checked against the actual live item registry.
+ * Alternative names are accepted ONLY when that exact item was registered:
+ * never substitute arbitrary ingots or the Minecraft iron block.
+ */
 public final class ChainsawUpgradeRules {
     private ChainsawUpgradeRules() {}
-    private static final int[] COUNTS = {3, 6, 27, 3, 3, 3};
-    private static final String[] MATERIALS = {
-        "minecraft:iron_block",
-        "minecraft:iron_block",
-        "zombie_extreme:titan_ingot",
-        "zombie_extreme:metal_block",
-        "minecraft:diamond_block",
-        "minecraft:netherite_block"
+
+    private static final String[][] MATERIAL_IDS = {
+        {"minecraft:iron_block"},
+        {"minecraft:iron_block"},
+        {"zombie_extreme:titanbar", "zombie_extreme:titan_ingot"},
+        {"zombie_extreme:metalblock", "zombie_extreme:metal_block"},
+        {"minecraft:diamond_block"},
+        {"minecraft:netherite_block"}
     };
 
     public static int requiredCount(int resultingTier) {
-        return resultingTier >= 0 && resultingTier < COUNTS.length ? COUNTS[resultingTier] : 0;
+        return UpgradePlanLogic.requiredCount(resultingTier);
     }
 
+    /** Empty string means required external material could not be resolved. */
     public static String materialId(int resultingTier) {
-        return resultingTier >= 0 && resultingTier < MATERIALS.length ? MATERIALS[resultingTier] : "";
+        if (resultingTier < 0 || resultingTier >= MATERIAL_IDS.length) return "";
+        for (String id : MATERIAL_IDS[resultingTier]) {
+            ResourceLocation key = ResourceLocation.parse(id);
+            if (BuiltInRegistries.ITEM.containsKey(key)) return id;
+        }
+        return "";
+    }
+
+    public static boolean materialAvailable(int targetTier) {
+        return !materialId(targetTier).isEmpty();
     }
 
     public static boolean isDyeOperation(ItemStack[] ingredients) {
+        if (ingredients == null || ingredients.length != 3) return false;
         int dyes = 0;
-        for (ItemStack item : ingredients) {
-            if (item.isEmpty()) continue;
-            if (!(item.getItem() instanceof DyeItem) || item.getCount() != 1) return false;
+        for (ItemStack stack : ingredients) {
+            if (stack.isEmpty()) continue;
+            if (!(stack.getItem() instanceof DyeItem) || stack.getCount() != 1) return false;
             dyes++;
         }
         return dyes == 1;
@@ -37,45 +58,58 @@ public final class ChainsawUpgradeRules {
 
     public static int resultingTier(ItemStack saw) {
         if (!saw.is(ZoneZeroChainsaw.CHAINSAW.get())) return -1;
-        boolean initialized = saw.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
-                net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getBoolean("ChainsawInitialized");
-        return initialized ? ZoneZeroChainsaw.tier(saw) + 1 : 0;
+        CustomData data = saw.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        boolean initialized = data.copyTag().getBoolean("ChainsawInitialized");
+        return UpgradePlanLogic.targetTier(initialized, ZoneZeroChainsaw.tier(saw));
     }
 
+    /**
+     * Returns an immutable, all-or-nothing plan. Material, fuel and dye are
+     * mutually exclusive by slot and exact counts across all 3 slots.
+     */
+    public static UpgradePlanLogic.Plan plan(ItemStack saw, ItemStack[] ingredients) {
+        if (!saw.is(ZoneZeroChainsaw.CHAINSAW.get()) ||
+                ingredients == null || ingredients.length != 3)
+            return UpgradePlanLogic.Plan.invalid();
+        int[] kinds = new int[3], counts = new int[3], colors = new int[3];
+        int tier = resultingTier(saw);
+        String material = materialId(tier);
+        for (int i=0;i<3;i++) {
+            ItemStack stack = ingredients[i];
+            if (stack.isEmpty()) {
+                kinds[i] = UpgradePlanLogic.EMPTY;
+                continue;
+            }
+            counts[i] = stack.getCount();
+            if (stack.getItem() instanceof DyeItem dye) {
+                kinds[i] = UpgradePlanLogic.DYE;
+                colors[i] = dye.getDyeColor().getId();
+            } else if (stack.is(ZoneZeroChainsaw.FUEL.get())) {
+                kinds[i] = UpgradePlanLogic.FUEL;
+            } else if (!material.isEmpty() &&
+                    BuiltInRegistries.ITEM.getKey(stack.getItem()).toString().equals(material)) {
+                kinds[i] = UpgradePlanLogic.MATERIAL;
+            } else {
+                kinds[i] = UpgradePlanLogic.INVALID;
+            }
+        }
+        return UpgradePlanLogic.match(tier, ZoneZeroChainsaw.dyeColor(saw),
+                kinds, counts, colors);
+    }
+
+    /** The preview is a COPY, never the original input saw stack. */
     public static ItemStack preview(ItemStack saw, ItemStack[] ingredients) {
-        if (!saw.is(ZoneZeroChainsaw.CHAINSAW.get()) || ingredients.length != 3) return ItemStack.EMPTY;
-        if (isDyeOperation(ingredients)) return dyePreview(saw, ingredients);
-        int target = resultingTier(saw);
-        if (target < 0 || target > 5) return ItemStack.EMPTY;
-        int fuelCans = 0;
-        int metals = 0;
-        boolean valid = true;
-        for (ItemStack item : ingredients) {
-            if (item.isEmpty()) continue;
-            if (item.is(ZoneZeroChainsaw.FUEL.get())) fuelCans += item.getCount();
-            else if (BuiltInRegistries.ITEM.getKey(item.getItem()).toString().equals(MATERIALS[target])) metals += item.getCount();
-            else valid = false;
-        }
-        if (!valid || fuelCans != 1 || metals != COUNTS[target]) return ItemStack.EMPTY;
+        UpgradePlanLogic.Plan plan = plan(saw, ingredients);
+        if (!plan.valid()) return ItemStack.EMPTY;
         ItemStack result = saw.copyWithCount(1);
-        ZoneZeroChainsaw.setTier(result, target);
-        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
-                result, tag -> tag.putBoolean("ChainsawInitialized", true));
-        return result;
-    }
-
-    private static ItemStack dyePreview(ItemStack saw, ItemStack[] ingredients) {
-        DyeItem dye = null;
-        int count = 0;
-        for (ItemStack item : ingredients) {
-            if (item.isEmpty()) continue;
-            if (!(item.getItem() instanceof DyeItem d) || item.getCount() != 1 || dye != null) return ItemStack.EMPTY;
-            dye = d;
-            count++;
+        ZoneZeroChainsaw.clearRuntimeState(result);
+        if (plan.dye()) {
+            ZoneZeroChainsaw.setDyeColor(result, plan.dyeColor());
+        } else {
+            ZoneZeroChainsaw.setTier(result, plan.targetTier());
+            CustomData.update(DataComponents.CUSTOM_DATA, result,
+                    tag -> tag.putBoolean("ChainsawInitialized", true));
         }
-        if (count != 1 || dye == null) return ItemStack.EMPTY;
-        ItemStack result = saw.copyWithCount(1);
-        ZoneZeroChainsaw.setDyeColor(result, dye.getDyeColor().getId());
         return result;
     }
 }

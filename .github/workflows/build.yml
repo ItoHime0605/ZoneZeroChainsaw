@@ -34,6 +34,8 @@ jobs:
           sudo apt-get install -y ffmpeg
       - name: Generate original audio, model, HUD and 8-frame chain motion
         run: python3 tools/generate_media.py
+      - name: Validate original chainsaw sound durations and gain
+        run: python3 tools/verify_audio.py
       - name: Validate 3D assets and localization
         run: python3 tools/verify_assets.py
       - name: Compile mod
@@ -42,6 +44,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: zonezero-chainsaw-0.1.21-alpha-dev
+          name: zonezero-chainsaw-0.1.22-alpha-dev
           path: build/libs/*.jar
           if-no-files-found: error

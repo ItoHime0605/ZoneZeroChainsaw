@@ -122,6 +122,26 @@ public final class LogicSmokeTest {
         }
         check(lastSpeed == ChainMotion.IDLE);
         check(ChainMotion.COAST_TICKS == 40);
+        // Spatial sound loops must align with server time; 4-tick damage
+        // NEVER resets an independent 12-tick engine or 8-tick chain clip.
+        check(!ChainsawAudioTiming.engineClip(117,100));
+        check(ChainsawAudioTiming.engineClip(118,100));
+        check(!ChainsawAudioTiming.engineClip(119,100));
+        check(ChainsawAudioTiming.engineClip(130,100));
+        check(ChainsawAudioTiming.engineClip(142,100));
+        check(!ChainsawAudioTiming.engineClip(130,131));
+        check(ChainsawAudioTiming.clipDue(101,ChainsawAudioTiming.NONE,8));
+        check(!ChainsawAudioTiming.clipDue(107,101,8));
+        check(ChainsawAudioTiming.clipDue(109,101,8));
+        check(ChainsawAudioTiming.clipDue(117,109,8));
+        check(!ChainsawAudioTiming.clipDue(118,119,8));
+        check(!ChainsawAudioTiming.clipDue(-1,ChainsawAudioTiming.NONE,8));
+        check(ChainsawAudioTiming.clipDue(140,134,6));
+        check(!ChainsawAudioTiming.clipDue(139,134,6));
+        check(ChainsawAudioTiming.START_DELAY == 18);
+        check(ChainsawAudioTiming.ENGINE_INTERVAL == 12);
+        check(ChainsawAudioTiming.CUT_INTERVAL == 8);
+        check(ChainsawAudioTiming.CONTACT_COOLDOWN == 6);
         // The HUD uses one fixed ivory-white text color, independent from
         // the engine. Only the two original guide-bar sprites change.
         check(ChainsawHudStyle.TEXT_COLOR == 0xfff0f4f2);

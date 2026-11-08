@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.78'
 }
-version = '0.1.21-alpha'
+version = '0.1.22-alpha'
 group = 'tw.zonezero'
 base { archivesName = 'zonezero-chainsaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -29,10 +29,13 @@ tasks.register('generateChainsawMedia', Exec) {
     inputs.file 'tools/generate_chainsaw_art.py'
     inputs.file 'tools/generate_chainsaw_hud.py'
     inputs.file 'tools/generate_chain_motion.py'
+    inputs.file 'tools/generate_chainsaw_sounds.py'
     outputs.files(
         file('src/main/resources/assets/zonezero_chainsaw/sounds/start.ogg'),
         file('src/main/resources/assets/zonezero_chainsaw/sounds/engine.ogg'),
         file('src/main/resources/assets/zonezero_chainsaw/sounds/cut.ogg'),
+        file('src/main/resources/assets/zonezero_chainsaw/sounds/contact.ogg'),
+        file('src/main/resources/assets/zonezero_chainsaw/sounds/stall.ogg'),
         file('src/main/resources/assets/zonezero_chainsaw/sounds/stop.ogg'),
         file('src/main/resources/assets/zonezero_chainsaw/textures/item/chain_running.png'),
         file('src/main/resources/assets/zonezero_chainsaw/textures/item/chain_coast.png'),

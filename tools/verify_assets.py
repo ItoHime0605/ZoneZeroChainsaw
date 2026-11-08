@@ -169,9 +169,11 @@ for i,color in enumerate(colors):
     assert group[5]["predicate"]["zonezero_chainsaw:cutting"]==1.0
 
 
-for name in ("start", "engine", "cut", "stop"):
+for name in ("start", "engine", "cut", "contact", "stop", "stall"):
     path = assets / "sounds" / (name + ".ogg")
     assert path.is_file() and path.read_bytes()[:4] == b"OggS"
+assert Path("tools/generate_chainsaw_sounds.py").is_file()
+assert Path("tools/verify_audio.py").is_file()
 
 # All held models use the same third-person physical grip anchor.
 # No position/scale snap when R starts or when continuous cutting begins.

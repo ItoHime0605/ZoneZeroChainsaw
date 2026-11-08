@@ -1,89 +1,19 @@
 #!/usr/bin/env python3
-"""Generate self-authored Zone Zero chainsaw sounds and pixel chain animation.
-All output is procedural; no third-party samples or Minecraft textures are used.
-Requires Python 3 standard library and ffmpeg (libvorbis encoder).
-"""
-import math
-import random
-import shutil
+"""Reproducibly generate original sounds, saw motion, item art and HUD."""
 import struct
-import subprocess
-import tempfile
-import wave
 import zlib
+from pathlib import Path
 
+from generate_chainsaw_sounds import create as generate_original_audio
 from generate_chainsaw_art import generate as generate_original_textures
 from generate_chainsaw_hud import generate as generate_original_hud
 from generate_chain_motion import generate as generate_chain_motion
-from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "src/main/resources/assets/zonezero_chainsaw"
 SOUNDS = ROOT / "sounds"
 TEXTURES = ROOT / "textures/item"
-SAMPLE_RATE = 22050
 SOUNDS.mkdir(parents=True, exist_ok=True)
 TEXTURES.mkdir(parents=True, exist_ok=True)
-
-
-def synth(kind, duration, seed):
-    rng = random.Random(seed)
-    count = round(SAMPLE_RATE * duration)
-    output = bytearray()
-    phase = 0.0
-    prev = 0.0
-    for i in range(count):
-        t = i / SAMPLE_RATE
-        u = t / duration
-        if kind == "start":
-            hz = 37.0 + 59.0 * min(1.0, u * 1.65)
-            envelope = min(1.0, u * 5.0) * (1.0 if u < .82 else max(0, (1-u)/.18))
-            chuff = 1.0 + .17 * math.sin(2*math.pi*(14*t)*(1.0 + u))
-        elif kind == "stop":
-            hz = 95.0 - 71.0 * u**.65
-            envelope = max(0, 1-u)**1.2
-            chuff = 1.0 + .16 * math.sin(2*math.pi*(13*t)*(1.0-u*.6))
-        elif kind == "cut":
-            hz = 112.5
-            envelope = min(1.0, u*12) * min(1.0, (1-u)*12)
-            chuff = 1.0 + .18 * math.sin(2*math.pi*60*t)
-        else:
-            # Exact whole cycles per .64 sec = gap-free periodic loop.
-            hz = 87.5
-            envelope = min(1.0, u*30) * min(1.0, (1-u)*30)
-            chuff = 1.0 + .1 * math.sin(2*math.pi*25*t)
-        phase += 2.0 * math.pi * hz / SAMPLE_RATE
-        harmonic = math.sin(phase) + .39*math.sin(2*phase+.21) + .21*math.sin(3*phase+.16)
-        tick = (rng.random() - rng.random())
-        prev = prev*.84 + tick*.16
-        harsh = .21*prev + .07*tick
-        if kind == "cut":
-            harsh *= 3.1
-        signal = (.34*harmonic + harsh)*envelope*chuff
-        level = int(max(-32767, min(32767, signal*15500)))
-        output.extend(struct.pack("<h", level))
-    return output
-
-
-def audio():
-    ffmpeg = shutil.which("ffmpeg")
-    if not ffmpeg:
-        raise SystemExit("ffmpeg with libvorbis is required to generate original chainsaw audio")
-    specs = [("start", .90, 2027), ("engine", .64, 332), ("cut", .48, 619), ("stop", 1.8, 904)]
-    with tempfile.TemporaryDirectory() as tmp:
-        for name, duration, seed in specs:
-            wav = Path(tmp) / (name + ".wav")
-            with wave.open(str(wav), "wb") as out:
-                out.setnchannels(1)
-                out.setsampwidth(2)
-                out.setframerate(SAMPLE_RATE)
-                out.writeframes(synth(name, duration, seed))
-            target = SOUNDS / (name + ".ogg")
-            subprocess.run([ffmpeg, "-hide_banner", "-loglevel", "error", "-nostdin",
-                            "-y", "-i", str(wav), "-c:a", "libvorbis", "-q:a", "4",
-                            str(target)], check=True)
-            if target.stat().st_size < 1000:
-                raise RuntimeError("Unexpectedly empty generated audio: " + name)
-
 
 def png_chunk(name, payload):
     name = name.encode("ascii")
@@ -137,9 +67,9 @@ def texture():
 
 
 if __name__ == "__main__":
-    audio()
+    generate_original_audio(SOUNDS)
     texture()  # Keeps legacy chain_coast.png available for older asset references.
     generate_chain_motion(TEXTURES)  # Replaces running atlas with 8 original moving frames.
     generate_original_textures(TEXTURES)
     generate_original_hud(ROOT / 'textures/gui')
-    print("Generated original OGG effects, animated chain textures, 24 mechanical materials, two guide HUDs and 12 directional 8-frame chain atlases.")
+    print("Generated six original OGG effects, 24 material sprites, two HUDs and 12 moving chain atlases.")

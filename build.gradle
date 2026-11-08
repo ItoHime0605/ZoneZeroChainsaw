@@ -14,3 +14,20 @@ neoForge {
     }
 }
 repositories { mavenCentral() }
+
+tasks.register('generateChainsawMedia', Exec) {
+    def executable = System.getProperty('os.name').toLowerCase().contains('windows') ? 'python' : 'python3'
+    commandLine executable, 'tools/generate_media.py'
+    inputs.file 'tools/generate_media.py'
+    outputs.files(
+        file('src/main/resources/assets/zonezero_chainsaw/sounds/start.ogg'),
+        file('src/main/resources/assets/zonezero_chainsaw/sounds/engine.ogg'),
+        file('src/main/resources/assets/zonezero_chainsaw/sounds/cut.ogg'),
+        file('src/main/resources/assets/zonezero_chainsaw/sounds/stop.ogg'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/item/chain_running.png'),
+        file('src/main/resources/assets/zonezero_chainsaw/textures/item/chain_coast.png')
+    )
+}
+tasks.named('processResources') {
+    dependsOn 'generateChainsawMedia'
+}

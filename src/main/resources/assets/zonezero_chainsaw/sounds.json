@@ -1,0 +1,34 @@
+{
+  "start": {
+    "sounds": [
+      {
+        "name": "zonezero_chainsaw:start",
+        "volume": 0.8
+      }
+    ]
+  },
+  "engine": {
+    "sounds": [
+      {
+        "name": "zonezero_chainsaw:engine",
+        "volume": 0.52
+      }
+    ]
+  },
+  "cut": {
+    "sounds": [
+      {
+        "name": "zonezero_chainsaw:cut",
+        "volume": 0.65
+      }
+    ]
+  },
+  "stop": {
+    "sounds": [
+      {
+        "name": "zonezero_chainsaw:stop",
+        "volume": 0.7
+      }
+    ]
+  }
+}

@@ -31,6 +31,20 @@ public final class ZoneZeroChainsaw {
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(net.minecraft.core.registries.Registries.MENU, MODID);
     public static final DeferredHolder<MenuType<?>, MenuType<ChainsawUpgradeMenu>> UPGRADE_MENU =
             MENUS.register("chainsaw_upgrade", () -> IMenuTypeExtension.create((id, inv, data) -> new ChainsawUpgradeMenu(id, inv)));
+    public static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS =
+            DeferredRegister.create(net.minecraft.core.registries.Registries.SOUND_EVENT, MODID);
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> SOUND_START =
+            SOUNDS.register("start", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, "start")));
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> SOUND_ENGINE =
+            SOUNDS.register("engine", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, "engine")));
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> SOUND_CUT =
+            SOUNDS.register("cut", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, "cut")));
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> SOUND_STOP =
+            SOUNDS.register("stop", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, "stop")));
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredBlock<Block> FERMENTER = BLOCKS.register("fermentation_barrel", () -> new FermentationBarrelBlock(BlockBehaviour.Properties.of().strength(3.0f, 6.0f).sound(SoundType.WOOD)));
@@ -44,6 +58,7 @@ public final class ZoneZeroChainsaw {
     public static final DeferredItem<Item> CHAINSAW = ITEMS.register("chainsaw", () -> new ChainsawItem(new Item.Properties().stacksTo(1)));
 
     public ZoneZeroChainsaw(IEventBus bus) {
+        SOUNDS.register(bus);
         BLOCKS.register(bus);
         MENUS.register(bus);
         ITEMS.register(bus);
@@ -87,5 +102,16 @@ public final class ZoneZeroChainsaw {
     public static void setEngineOn(ItemStack stack, boolean on) {
         CustomData.update(DataComponents.CUSTOM_DATA, stack,
                 tag -> tag.putBoolean("ChainsawEngineOn", on));
+    }
+
+    /** Game-time based two-second motor coast after manual or automatic shutdown. */
+    public static void setCoastUntil(ItemStack stack, long worldTick) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack,
+                tag -> tag.putLong("ChainsawCoastUntil", worldTick));
+    }
+
+    public static long coastUntil(ItemStack stack) {
+        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                .copyTag().getLong("ChainsawCoastUntil");
     }
 }

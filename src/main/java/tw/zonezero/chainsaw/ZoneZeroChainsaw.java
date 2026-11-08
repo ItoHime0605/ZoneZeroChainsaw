@@ -28,8 +28,10 @@ public final class ZoneZeroChainsaw {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredBlock<Block> FERMENTER = BLOCKS.register("fermentation_barrel", () -> new FermentationBarrelBlock(BlockBehaviour.Properties.of().strength(3.0f, 6.0f).sound(SoundType.WOOD)));
+    public static final DeferredBlock<Block> UPGRADE_STATION = BLOCKS.register("chainsaw_upgrade_station", () -> new ChainsawUpgradeStationBlock(BlockBehaviour.Properties.of().strength(4.0f, 8.0f).sound(SoundType.METAL)));
     public static final DeferredBlock<Block> REFINERY = BLOCKS.registerSimpleBlock("fuel_refinery", BlockBehaviour.Properties.of().strength(3.5f));
     public static final DeferredItem<BlockItem> FERMENTER_ITEM = ITEMS.registerSimpleBlockItem("fermentation_barrel", FERMENTER);
+    public static final DeferredItem<BlockItem> UPGRADE_STATION_ITEM = ITEMS.registerSimpleBlockItem("chainsaw_upgrade_station", UPGRADE_STATION);
     public static final DeferredItem<BlockItem> REFINERY_ITEM = ITEMS.registerSimpleBlockItem("fuel_refinery", REFINERY);
     public static final DeferredItem<Item> CRUDE = ITEMS.registerSimpleItem("fermented_crude", new Item.Properties());
     public static final DeferredItem<Item> FUEL = ITEMS.register("biofuel_bottle", () -> new BiofuelCanItem(new Item.Properties().stacksTo(16)));

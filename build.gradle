@@ -13,7 +13,14 @@ neoForge {
         server { server() }
     }
 }
-repositories { mavenCentral() }
+repositories {
+    mavenCentral()
+    maven { url = uri('https://maven.kosmx.dev/') }
+}
+dependencies {
+    // The player-animation-lib mod is installed separately on clients.
+    compileOnly 'dev.kosmx.player-anim:player-animation-lib-forge:2.0.4+1.21.1'
+}
 
 tasks.register('generateChainsawMedia', Exec) {
     def executable = System.getProperty('os.name').toLowerCase().contains('windows') ? 'python' : 'python3'

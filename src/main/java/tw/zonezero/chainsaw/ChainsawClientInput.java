@@ -36,6 +36,15 @@ public final class ChainsawClientInput {
             tickCounter = 0;
         }
         lastAttackHeld = attacking;
+        // Vanilla short swinging attack visually conflicts with a continuous
+        // held chainsaw. Freeze the swing timer while motor is running; the
+        // actual server-authoritative hit pulses remain at 4 ticks each.
+        if (active && ZoneZeroChainsaw.isEngineOn(mc.player.getMainHandItem())
+                && mc.player.getOffhandItem().isEmpty()) {
+            mc.player.swinging = false;
+            mc.player.swingTime = 0;
+        }
+
     }
 
     @SubscribeEvent

@@ -1,7 +1,6 @@
 package tw.zonezero.chainsaw;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -20,11 +19,6 @@ import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsE
  */
 @EventBusSubscriber(modid = ZoneZeroChainsaw.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ChainsawTwoHandedClient {
-    // 1.21.1-compatible built-in two-handed braced pose. This avoids newer
-    // dynamic ArmPose APIs unavailable in the server's NeoForge baseline.
-    private static final HumanoidModel.ArmPose TWO_HANDED =
-            HumanoidModel.ArmPose.CROSSBOW_HOLD;
-
     private ChainsawTwoHandedClient() {}
 
     private static boolean canWield(LivingEntity entity, ItemStack stack) {
@@ -36,12 +30,6 @@ public final class ChainsawTwoHandedClient {
     @SubscribeEvent
     public static void clientExtensions(RegisterClientExtensionsEvent event) {
         event.registerItem(new IClientItemExtensions() {
-            @Override
-            public HumanoidModel.ArmPose getArmPose(LivingEntity entity, InteractionHand hand, ItemStack stack) {
-                if (hand == InteractionHand.MAIN_HAND && canWield(entity, stack)) return TWO_HANDED;
-                return null;
-            }
-
             @Override
             public boolean applyForgeHandTransform(PoseStack pose, LocalPlayer player, HumanoidArm arm,
                                                     ItemStack stack, float partialTick,

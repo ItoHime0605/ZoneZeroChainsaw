@@ -25,9 +25,15 @@ public record ChainsawControlPacket(byte action) implements CustomPacketPayload 
 
     public static void register(RegisterPayloadHandlersEvent event) {
         event.registrar("1").playToServer(TYPE, STREAM_CODEC, (packet, context) -> {
-            if (context.player() instanceof ServerPlayer player) {
-                ChainsawGameplay.onControl(player, packet.action());
-            }
+            // NeoForge 1.21.1 defaults to MAIN, but using enqueueWork makes
+            // inventory, fuel, targets and sounds safe even when another
+            // registrar explicitly uses a networking thread.
+            context.enqueueWork(() -> {
+                if (context.player() instanceof ServerPlayer player
+                        && player.isAlive() && !player.isSpectator()) {
+                    ChainsawGameplay.onControl(player, packet.action());
+                }
+            });
         });
     }
 }

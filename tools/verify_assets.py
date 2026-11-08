@@ -149,7 +149,7 @@ for state in ("idle", "running"):
     name = assets / "textures/gui" / ("guide_" + state + ".png")
     assert name.is_file(), f"Missing original HUD sprite: {name}"
     png = name.read_bytes()
-    assert png[:8] == b"\\x89PNG\\r\\n\\x1a\\n"
+    assert png[:8] == b"\x89PNG\r\n\x1a\n"
     assert struct.unpack(">II", png[16:24]) == (112,40)
     assert png[24] == 8 and png[25] == 6, "HUD sprite must use RGBA"
     pointer=8

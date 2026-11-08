@@ -17,7 +17,7 @@ colors = (
 base = json.loads((root / "chainsaw_base.json").read_text("utf-8"))
 config = json.loads((root / "chainsaw.json").read_text("utf-8"))
 assert len(base["elements"]) >= 85, "The full detailed 3D model is missing"
-assert len(config["overrides"]) == 33, "Missing idle/active model combinations"
+assert len(config["overrides"]) == 67, "Missing idle/running/cutting/coast model combinations"
 for element in base["elements"]:
     assert all(-16 <= f < t <= 32 for f, t in zip(element["from"], element["to"]))
     for face in element["faces"].values():
@@ -36,13 +36,13 @@ def check_texture(tex):
 for texture in base["textures"].values():
     check_texture(texture)
 for i, color in enumerate(colors):
-    for variant in ("", "_active"):
+    for variant in ("", "_active", "_running", "_coast", "_cutting"):
         model = json.loads((root / f"chainsaw_{color}{variant}.json").read_text("utf-8"))
-        assert model["parent"].startswith("zonezero_chainsaw:item/chainsaw_") or variant == ""
+        assert model["parent"].startswith("zonezero_chainsaw:item/chainsaw_"), (color, variant)
         if not variant:
             assert "orange" in model["textures"], color
             check_texture(model["textures"]["orange"])
-    assert config["overrides"][i * 2 + 1]["predicate"]["zonezero_chainsaw:dye_color"] == (i + 1) / 16
+    assert config["overrides"][3 + i * 4]["predicate"]["zonezero_chainsaw:dye_color"] == (i + 1) / 16
 for lang in ("zh_tw", "en_us"):
     text = json.loads((assets / f"lang/{lang}.json").read_text("utf-8"))
     assert all(key in text for key in (
@@ -55,4 +55,17 @@ blade = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#guid
 assert min(e["from"][0] for e in blade) < -8, "Guide bar has shrunk"
 assert max(e["to"][0] for e in body) - min(e["from"][0] for e in body) < 9, "Body too thick"
 assert base["display"]["firstperson_righthand"]["scale"][0] <= .5
-print("PASS: 16 original dye textures, 33 idle/cutting variants, independent guide/chain, sizes, GUI and languages.")
+for name in ("chain_running", "chain_coast"):
+    png = assets / "textures/item" / (name + ".png")
+    assert png.is_file(), f"Missing animated texture: {name}"
+    data = png.read_bytes()
+    assert data[:8] == b"\\x89PNG\\r\\n\\x1a\\n"
+    assert struct.unpack(">II", data[16:24]) == (64, 256)
+    meta = json.loads((assets / "textures/item" / (name + ".png.mcmeta")).read_text("utf-8"))
+    assert meta["animation"]["frametime"] > 0
+
+for name in ("start", "engine", "cut", "stop"):
+    path = assets / "sounds" / (name + ".ogg")
+    assert path.is_file() and path.read_bytes()[:4] == b"OggS"
+
+print("PASS: 16 original dye textures, 67 item variants, animated chain, original OGG sounds and localization.")

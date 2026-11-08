@@ -22,7 +22,11 @@ public final class ChainsawWieldRestrictions {
 
     @SubscribeEvent
     public static void attackEntity(AttackEntityEvent event) {
-        if (blocked(event.getEntity())) event.setCanceled(true);
+        // Suppress the vanilla one-shot attack even if a client bypasses its
+        // own input hook. Our 4-tick server-controlled saw contact is separate
+        // from Player.attack(), so this cannot grant free unpowered damage.
+        if (event.getEntity().getMainHandItem().is(ZoneZeroChainsaw.CHAINSAW.get()))
+            event.setCanceled(true);
     }
 
     @SubscribeEvent

@@ -81,4 +81,23 @@ for name in ("start", "engine", "cut", "stop"):
     path = assets / "sounds" / (name + ".ogg")
     assert path.is_file() and path.read_bytes()[:4] == b"OggS"
 
-print("PASS: 16 original dye textures, 67 item variants, animated chain, original OGG sounds and localization.")
+# User-reported pose regression: no off-axis diagonal strike when held.
+assert base["display"]["thirdperson_righthand"]["rotation"][1] == -90
+assert base["display"]["thirdperson_righthand"]["rotation"][2] == 0
+for posture in ("chainsaw_running", "chainsaw_active"):
+    model = json.loads((root / (posture + ".json")).read_text("utf-8"))
+    assert model["display"]["thirdperson_righthand"]["rotation"] == [0, -90, 0], posture
+for color in colors:
+    running = json.loads((root / f"chainsaw_{color}_running.json").read_text("utf-8"))
+    cutting = json.loads((root / f"chainsaw_{color}_active.json").read_text("utf-8"))
+    assert running["display"]["thirdperson_righthand"]["rotation"] == [0, -90, 0], color
+    assert cutting["display"]["thirdperson_righthand"]["rotation"] == [0, -90, 0], color
+
+# Compile-time integration with the uploaded playerAnimator API is mandatory.
+gradle = Path("build.gradle").read_text("utf-8")
+toml = Path("src/main/resources/META-INF/neoforge.mods.toml").read_text("utf-8")
+assert "player-animation-lib-forge:2.0.4+1.21.1" in gradle
+assert 'modId="playeranimator"' in toml
+assert Path("src/main/java/tw/zonezero/chainsaw/ChainsawPlayerAnimator.java").is_file()
+
+print("PASS: 16 dye colors, 67 states, animated chain, OGG sounds, held poses and playerAnimator dependency.")

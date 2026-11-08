@@ -30,7 +30,7 @@ public final class ZoneZeroChainsaw {
     public static final String MODID = "zonezero_chainsaw";
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(net.minecraft.core.registries.Registries.MENU, MODID);
     public static final DeferredHolder<MenuType<?>, MenuType<ChainsawUpgradeMenu>> UPGRADE_MENU =
-            MENUS.register("chainsaw_upgrade", () -> IMenuTypeExtension.create((id, inv, data) -> new ChainsawUpgradeMenu(id, inv)));
+            MENUS.register("chainsaw_upgrade", () -> IMenuTypeExtension.create((id, inv, data) -> new ChainsawUpgradeMenu(id, inv, data.readBlockPos())));
     public static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS =
             DeferredRegister.create(net.minecraft.core.registries.Registries.SOUND_EVENT, MODID);
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> SOUND_START =

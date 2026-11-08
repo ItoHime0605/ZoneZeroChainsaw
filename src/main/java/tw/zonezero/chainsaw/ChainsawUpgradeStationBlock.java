@@ -30,13 +30,13 @@ public final class ChainsawUpgradeStationBlock extends HorizontalDirectionalBloc
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide) {
-            player.openMenu(new MenuProvider() {
+        if (!level.isClientSide && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            serverPlayer.openMenu(new MenuProvider() {
                 @Override public Component getDisplayName() { return Component.translatable("container.zonezero_chainsaw.chainsaw_upgrade"); }
                 @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player p) {
                     return new ChainsawUpgradeMenu(id, inventory, pos);
                 }
-            });
+            }, buf -> buf.writeBlockPos(pos));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

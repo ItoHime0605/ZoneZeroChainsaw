@@ -162,7 +162,7 @@ public final class ChainsawUpgradeMenu extends AbstractContainerMenu {
     }
 
     public int nextTier() { return ChainsawUpgradeRules.resultingTier(input.getItem(0)); }
-    public boolean isDye() { return ChainsawUpgradeRules.isDyeOperation(materials()); }
+    public boolean isDye() { return ChainsawUpgradeRules.plan(input.getItem(0), materials()).dye(); }
     public boolean materialMissing() {
         int tier = nextTier();
         return !isDye() && tier >= 0 && tier <= 5
@@ -179,6 +179,10 @@ public final class ChainsawUpgradeMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
+        // Client menus trust server validation. The server received the
+        // actual station position from the MenuProvider, not a guessed block
+        // underneath the player.
+        if (player.level().isClientSide) return true;
         return player.level() == level
             && level.getBlockState(stationPos).is(ZoneZeroChainsaw.UPGRADE_STATION.get())
             && player.distanceToSqr(stationPos.getX()+.5,stationPos.getY()+.5,

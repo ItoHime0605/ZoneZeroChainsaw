@@ -7,6 +7,7 @@ import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import tw.zonezero.chainsaw.logic.SustainedCutLogic;
 import tw.zonezero.chainsaw.logic.ChainsawAudioTiming;
+import tw.zonezero.chainsaw.logic.ChainsawSafetyRules;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -31,6 +32,7 @@ public final class ChainsawGameplay {
         long lastHeldTick = -1000;
         int heldTicks;
         long startedAt;
+        long lastToggleAt = -1000;
         long lastCutAudioAt = ChainsawAudioTiming.NONE;
         long lastContactAudioAt = ChainsawAudioTiming.NONE;
         ItemStack lastSaw = ItemStack.EMPTY;
@@ -41,15 +43,27 @@ public final class ChainsawGameplay {
 
     public static void onControl(ServerPlayer player, byte action) {
         if (action < 1 || action > 3) return;
+        if (!player.isAlive() || player.isSpectator()) return;
         ItemStack saw = player.getMainHandItem();
         if (!saw.is(ZoneZeroChainsaw.CHAINSAW.get())) {
-            INPUTS.remove(player.getUUID());
+            InputState previous = INPUTS.remove(player.getUUID());
+            if (previous != null && previous.lastSaw.is(ZoneZeroChainsaw.CHAINSAW.get()))
+                ZoneZeroChainsaw.clearRuntimeState(previous.lastSaw);
             return;
         }
         InputState input = INPUTS.computeIfAbsent(player.getUUID(), id -> new InputState());
+        if (!input.lastSaw.isEmpty() && input.lastSaw != saw) {
+            // Item switch before the next server tick MUST not leave the
+            // previously held saw in an independently running state.
+            ZoneZeroChainsaw.clearRuntimeState(input.lastSaw);
+            resetCutInput(input);
+            input.lastToggleAt = -1000;
+        }
         input.lastSaw = saw;
         // Repeated held packets never reschedule or duplicate a sound loop.
         if (action == 1) {
+            long tick = player.level().getGameTime();
+            if (!ChainsawSafetyRules.toggleAllowed(tick, input.lastToggleAt)) return;
             boolean next = !ZoneZeroChainsaw.isEngineOn(saw);
             // Both hands are mandatory. A fuel can in the offhand can be used
             // for refilling only while the engine is stopped.
@@ -57,15 +71,19 @@ public final class ChainsawGameplay {
                 player.displayClientMessage(
                         Component.translatable("message.zonezero_chainsaw.offhand_required")
                                 .withStyle(ChatFormatting.RED), true);
-                input.heldTicks = 0;
-                input.lastHeldTick = -1000;
+                resetCutInput(input);
                 return;
             }
             if (next && ZoneZeroChainsaw.fuel(saw) <= 0) {
                 player.displayClientMessage(Component.translatable("message.zonezero_chainsaw.no_fuel")
                         .withStyle(ChatFormatting.RED), true);
+                resetCutInput(input);
                 return;
             }
+            if (next && !ChainsawSafetyRules.canStart(
+                    player.getOffhandItem().isEmpty(), ZoneZeroChainsaw.fuel(saw),
+                    player.isAlive(), player.isSpectator())) return;
+            input.lastToggleAt = tick;
             ZoneZeroChainsaw.setEngineOn(saw, next);
             ZoneZeroChainsaw.setCutting(saw, false);
             input.lastCutAudioAt = ChainsawAudioTiming.NONE;
@@ -79,8 +97,7 @@ public final class ChainsawGameplay {
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                     next ? ZoneZeroChainsaw.SOUND_START.get() : ZoneZeroChainsaw.SOUND_STOP.get(),
                     net.minecraft.sounds.SoundSource.PLAYERS, 0.74f, 1.0f);
-            input.heldTicks = 0;
-            input.lastHeldTick = -1000;
+            resetCutInput(input);
             player.displayClientMessage(Component.translatable(next
                     ? "message.zonezero_chainsaw.engine_on" : "message.zonezero_chainsaw.engine_off"), true);
         } else if (action == 2) {
@@ -111,14 +128,21 @@ public final class ChainsawGameplay {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         UUID id = player.getUUID();
         InputState input = INPUTS.get(id);
-        if (input == null) return;
         ItemStack saw = player.getMainHandItem();
-        if (!player.isAlive() || !saw.is(ZoneZeroChainsaw.CHAINSAW.get()) || saw != input.lastSaw) {
+        if (input == null) {
+            // A saw loaded from storage or a previous game session never
+            // gains free motor time, cutting, damage or fuel by accident.
+            if (saw.is(ZoneZeroChainsaw.CHAINSAW.get())
+                    && (ZoneZeroChainsaw.isEngineOn(saw) || ZoneZeroChainsaw.isCutting(saw)))
+                ZoneZeroChainsaw.clearRuntimeState(saw);
+            return;
+        }
+        if (ChainsawSafetyRules.mustStop(saw == input.lastSaw, player.isAlive(),
+                player.isSpectator(), true)
+                || !saw.is(ZoneZeroChainsaw.CHAINSAW.get())) {
             if (!input.lastSaw.isEmpty() && input.lastSaw.is(ZoneZeroChainsaw.CHAINSAW.get())) {
                 boolean wasOn = ZoneZeroChainsaw.isEngineOn(input.lastSaw);
-                ZoneZeroChainsaw.setEngineOn(input.lastSaw, false);
-                ZoneZeroChainsaw.setCoastUntil(input.lastSaw,
-                        player.level().getGameTime() + 40);
+                ZoneZeroChainsaw.clearRuntimeState(input.lastSaw);
                 if (wasOn && player.isAlive()) {
                     player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                             ZoneZeroChainsaw.SOUND_STOP.get(),
@@ -148,9 +172,8 @@ public final class ChainsawGameplay {
             return;
         }
         if (!ZoneZeroChainsaw.isEngineOn(saw)) {
-            input.heldTicks = 0;
-            input.lastCutAudioAt = ChainsawAudioTiming.NONE;
-            input.lastContactAudioAt = ChainsawAudioTiming.NONE;
+            resetCutInput(input);
+            ZoneZeroChainsaw.setCutting(saw, false);
             return;
         }
         if (ZoneZeroChainsaw.fuel(saw) <= 0) {
@@ -234,12 +257,44 @@ public final class ChainsawGameplay {
         }
     }
 
+    /** Only runtime/animation state is cleared; all saved saw properties remain. */
+    private static void resetCutInput(InputState input) {
+        input.heldTicks = 0;
+        input.lastHeldTick = -1000;
+        input.lastCutAudioAt = ChainsawAudioTiming.NONE;
+        input.lastContactAudioAt = ChainsawAudioTiming.NONE;
+    }
+
+    private static void clearInventoryRuntime(Player player) {
+        for (ItemStack stack : player.getInventory().items)
+            if (stack.is(ZoneZeroChainsaw.CHAINSAW.get()))
+                ZoneZeroChainsaw.clearRuntimeState(stack);
+        for (ItemStack stack : player.getInventory().offhand)
+            if (stack.is(ZoneZeroChainsaw.CHAINSAW.get()))
+                ZoneZeroChainsaw.clearRuntimeState(stack);
+        for (ItemStack stack : player.getInventory().armor)
+            if (stack.is(ZoneZeroChainsaw.CHAINSAW.get()))
+                ZoneZeroChainsaw.clearRuntimeState(stack);
+    }
+
+    @SubscribeEvent
+    public static void login(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
+        INPUTS.remove(event.getEntity().getUUID());
+        clearInventoryRuntime(event.getEntity());
+    }
+
+    @SubscribeEvent
+    public static void respawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent event) {
+        INPUTS.remove(event.getEntity().getUUID());
+        clearInventoryRuntime(event.getEntity());
+    }
+
     @SubscribeEvent
     public static void logout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
         InputState state = INPUTS.remove(event.getEntity().getUUID());
-        if (state != null && state.lastSaw.is(ZoneZeroChainsaw.CHAINSAW.get())) {
-            ZoneZeroChainsaw.setEngineOn(state.lastSaw, false);
-        }
+        if (state != null && state.lastSaw.is(ZoneZeroChainsaw.CHAINSAW.get()))
+            ZoneZeroChainsaw.clearRuntimeState(state.lastSaw);
+        clearInventoryRuntime(event.getEntity());
     }
 
     private static LivingEntity findTarget(ServerPlayer player) {

@@ -102,6 +102,26 @@ public final class LogicSmokeTest {
         check(Math.abs((mainWalk - mainCut.x()) - (supportWalk - supportCut.x())) < .0001);
         check(Math.abs(mainWalk - mainCut.x()) < .04f);
         check(ThirdPersonGrip.arm(false,true,1,true,0,0).x() < mainCut.x());
+        // 40 tick coast: fast (12), medium (14), slow (14), then static.
+        check(ChainMotion.engineModel(true, 0, 100) == ChainMotion.RUNNING);
+        check(ChainMotion.engineModel(false, 140, 100) == ChainMotion.COAST_FAST);
+        check(ChainMotion.engineModel(false, 140, 111) == ChainMotion.COAST_FAST);
+        check(ChainMotion.engineModel(false, 140, 112) == ChainMotion.COAST_MEDIUM);
+        check(ChainMotion.engineModel(false, 140, 125) == ChainMotion.COAST_MEDIUM);
+        check(ChainMotion.engineModel(false, 140, 126) == ChainMotion.COAST_SLOW);
+        check(ChainMotion.engineModel(false, 140, 139) == ChainMotion.COAST_SLOW);
+        check(ChainMotion.engineModel(false, 140, 140) == ChainMotion.IDLE);
+        check(ChainMotion.engineModel(false, 140, 141) == ChainMotion.IDLE);
+        check(ChainMotion.engineModel(false, 140, 99) == ChainMotion.IDLE);
+        check(ChainMotion.engineModel(false, 0, 100) == ChainMotion.IDLE);
+        float lastSpeed = ChainMotion.RUNNING;
+        for (int step = 0; step <= 40; step++) {
+            float speed = ChainMotion.engineModel(false, 140, 100 + step);
+            check(speed <= lastSpeed && speed >= ChainMotion.IDLE);
+            lastSpeed = speed;
+        }
+        check(lastSpeed == ChainMotion.IDLE);
+        check(ChainMotion.COAST_TICKS == 40);
         // The HUD uses one fixed ivory-white text color, independent from
         // the engine. Only the two original guide-bar sprites change.
         check(ChainsawHudStyle.TEXT_COLOR == 0xfff0f4f2);

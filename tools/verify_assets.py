@@ -17,7 +17,7 @@ colors = (
 base = json.loads((root / "chainsaw_base.json").read_text("utf-8"))
 config = json.loads((root / "chainsaw.json").read_text("utf-8"))
 assert len(base["elements"]) == 120, "The full redesigned 120-piece model is missing"
-assert len(config["overrides"]) == 67, "Missing idle/running/cutting/coast model combinations"
+assert len(config["overrides"]) == 101, "Missing 16-dye / running / 3-stage coast / cutting models"
 for element in base["elements"]:
     assert all(-16 <= f < t <= 32 for f, t in zip(element["from"], element["to"]))
     for face in element["faces"].values():
@@ -39,13 +39,17 @@ def check_texture(tex):
 for texture in base["textures"].values():
     check_texture(texture)
 for i, color in enumerate(colors):
-    for variant in ("", "_active", "_running", "_coast", "_cutting"):
+    for variant in ("", "_active", "_running", "_coast", "_cutting",
+                    "_coast_fast", "_coast_medium", "_coast_slow"):
         model = json.loads((root / f"chainsaw_{color}{variant}.json").read_text("utf-8"))
         assert model["parent"].startswith("zonezero_chainsaw:item/chainsaw_"), (color, variant)
         if not variant:
             assert "orange" in model["textures"], color
             check_texture(model["textures"]["orange"])
-    assert config["overrides"][3 + i * 4]["predicate"]["zonezero_chainsaw:dye_color"] == (i + 1) / 16
+        if variant in ("_running", "_cutting", "_coast_fast",
+                       "_coast_medium", "_coast_slow"):
+            assert model["textures"]["orange"] == f"zonezero_chainsaw:item/housing_{color}"
+    assert config["overrides"][5 + i * 6]["predicate"]["zonezero_chainsaw:dye_color"] == (i + 1) / 16
 for lang in ("zh_tw", "en_us"):
     text = json.loads((assets / f"lang/{lang}.json").read_text("utf-8"))
     assert all(key in text for key in (
@@ -104,14 +108,66 @@ for color in colors:
     assert "display" not in running or all(
         running["display"].get(hand, base["display"][hand]) == base["display"][hand]
         for hand in firstperson), color
-for name in ("chain_running", "chain_coast"):
-    png = assets / "textures/item" / (name + ".png")
-    assert png.is_file(), f"Missing animated texture: {name}"
-    data = png.read_bytes()
-    assert data[:8] == b"\x89PNG\r\n\x1a\n"
-    assert struct.unpack(">II", data[16:24]) == (64, 256)
-    meta = json.loads((assets / "textures/item" / (name + ".png.mcmeta")).read_text("utf-8"))
-    assert meta["animation"]["frametime"] > 0
+# Animations use eight equal 64x64 frames (64x512 atlas) and three
+# controlled coast speeds. Opposite link travel and nose rotation are authored
+# independently rather than swapping one generic animated texture.
+assert Path("tools/generate_chain_motion.py").is_file()
+import zlib
+def read_atlas(file):
+    png=file.read_bytes()
+    assert png[:8] == b"\x89PNG\r\n\x1a\n", file
+    assert struct.unpack(">II",png[16:24]) == (64,512), file
+    assert png[24:26] == bytes([8,6]), file
+    at=8
+    data=bytearray()
+    while at < len(png):
+        n=struct.unpack(">I",png[at:at+4])[0]
+        k=png[at+4:at+8]
+        if k==b"IDAT": data+=png[at+8:at+8+n]
+        at+=n+12
+    raw=zlib.decompress(data)
+    assert len(raw)==(64*4+1)*512
+    frame_size=(64*4+1)*64
+    return [raw[i*frame_size:(i+1)*frame_size] for i in range(8)]
+
+for speed, frametime in (("running",1),("coast_fast",2),
+                         ("coast_medium",4),("coast_slow",8)):
+    layers={}
+    for layer in ("chain","chain_reverse","chain_nose"):
+        name=layer+"_"+speed
+        png=assets / "textures/item" / (name+".png")
+        assert png.is_file(), name
+        frames=read_atlas(png)
+        assert frames[0] != frames[1], name
+        assert len(set(frames)) == 8, "Identical frame in animation: "+name
+        mcmeta=json.loads((png.with_suffix(".png.mcmeta")).read_text("utf-8"))
+        assert mcmeta["animation"]["frametime"] == frametime, name
+        layers[layer]=frames
+    assert layers["chain"][1] != layers["chain_reverse"][1], "Upper/lower links same direction"
+    for name in (speed,):
+        model=json.loads((root / ("chainsaw_"+name+".json")).read_text("utf-8"))
+        assert model["textures"]["chain"] == "zonezero_chainsaw:item/chain_"+speed
+        assert model["textures"]["chain_reverse"] == "zonezero_chainsaw:item/chain_reverse_"+speed
+        assert model["textures"]["chain_nose"] == "zonezero_chainsaw:item/chain_nose_"+speed
+# Each of 16 dye variants inherits from the SAME moving parent, preserving
+# all first-person/third-person camera transforms.
+for color in colors:
+    for speed in ("running","coast_fast","coast_medium","coast_slow"):
+        m=json.loads((root / f"chainsaw_{color}_{speed}.json").read_text("utf-8"))
+        assert m["parent"] == "zonezero_chainsaw:item/chainsaw_"+speed
+
+# Inspect override priority at speed thresholds. Cutting must win if active.
+overrides=config["overrides"]
+assert [v["predicate"]["zonezero_chainsaw:engine"] for v in overrides[:4]] == [.25,.5,.75,1.0]
+assert overrides[4]["predicate"]["zonezero_chainsaw:cutting"] == 1.0
+for i,color in enumerate(colors):
+    group=overrides[5+i*6:5+(i+1)*6]
+    assert len(group)==6
+    dye=(i+1)/16
+    for v in group: assert v["predicate"]["zonezero_chainsaw:dye_color"]==dye
+    assert [v["predicate"].get("zonezero_chainsaw:engine") for v in group[1:5]] == [.25,.5,.75,1.0]
+    assert group[5]["predicate"]["zonezero_chainsaw:cutting"]==1.0
+
 
 for name in ("start", "engine", "cut", "stop"):
     path = assets / "sounds" / (name + ".ogg")
@@ -132,8 +188,10 @@ for mode in ("chainsaw_running","chainsaw_active"):
 for color in colors:
     for state in ("running","active"):
         model = json.loads((root / f"chainsaw_{color}_{state}.json").read_text("utf-8"))
+        # Running now inherits the shared model transform and color separately.
+        inherited = json.loads((root / ("chainsaw_"+state+".json")).read_text("utf-8"))
         for hand in thirdperson:
-            assert model["display"][hand] == base["display"][hand], (color,state,hand)
+            assert model.get("display", inherited["display"]).get(hand) == base["display"][hand], (color,state,hand)
 # Model geometry was designed with a U at x≈7.33 and rear handle at
 # x≈17.96. Both remain present; the support arm is forward of the main arm.
 rears = [e for e in base["elements"] if e["faces"]["north"]["texture"] == "#rubber"

@@ -70,10 +70,20 @@ public final class ChainsawUpgradeMenu extends AbstractContainerMenu {
                     && ItemStack.isSameItemSameComponents(getItem(), expected);
             }
 
+            @Override public ItemStack remove(int amount) {
+                if (amount <= 0) return ItemStack.EMPTY;
+                if (level.isClientSide) return super.remove(amount);
+                // Commit the three-slot transaction BEFORE the result leaves
+                // this virtual slot. No result is granted if the recipe fails.
+                ItemStack result = ChainsawUpgradeRules.preview(input.getItem(0), materials());
+                if (result.isEmpty() || getItem().isEmpty()
+                        || !ItemStack.isSameItemSameComponents(result, getItem()))
+                    return ItemStack.EMPTY;
+                return consumeInputs(result) ? result : ItemStack.EMPTY;
+            }
+
             @Override public void onTake(Player player, ItemStack stack) {
-                // Server runs this on the same game thread as mayPickup.
-                // A preview must never be consumed on the client.
-                if (!player.level().isClientSide) consumeInputs(stack);
+                // Transaction already committed in remove(), server-side.
                 super.onTake(player, stack);
             }
         });
@@ -110,7 +120,7 @@ public final class ChainsawUpgradeMenu extends AbstractContainerMenu {
      * No other method removes these ingredients, so all slots are updated
      * together and the preview is invalidated before the next pickup.
      */
-    private void consumeInputs(ItemStack taken) {
+    private boolean consumeInputs(ItemStack taken) {
         ItemStack expected = ChainsawUpgradeRules.preview(input.getItem(0), materials());
         UpgradePlanLogic.Plan plan = ChainsawUpgradeRules.plan(input.getItem(0), materials());
         if (!plan.valid() || expected.isEmpty()
@@ -122,7 +132,7 @@ public final class ChainsawUpgradeMenu extends AbstractContainerMenu {
             output.setItem(0, ItemStack.EMPTY);
             updating = false;
             broadcastChanges();
-            return;
+            return false;
         }
 
         int remaining = plan.dye() ? 0 : ChainsawUpgradeRules.requiredCount(plan.targetTier());
@@ -153,6 +163,7 @@ public final class ChainsawUpgradeMenu extends AbstractContainerMenu {
             updating = false;
         }
         updateOutput();
+        return true;
     }
 
     @Override

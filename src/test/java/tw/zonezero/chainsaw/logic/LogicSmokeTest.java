@@ -209,7 +209,9 @@ public final class LogicSmokeTest {
             int[] q={prices[tier],1,0};
             int[] dye={0,0,0};
             UpgradePlanLogic.Plan plan=UpgradePlanLogic.match(tier,-1,k,q,dye);
-            check(plan.valid() && !plan.dye() && plan.targetTier()==tier);
+            if (!(plan.valid() && !plan.dye() && plan.targetTier()==tier))
+                throw new AssertionError("Invalid material recipe tier="+tier+" plan="+plan
+                    +" kinds="+java.util.Arrays.toString(k)+" counts="+java.util.Arrays.toString(q));
             check(!UpgradePlanLogic.match(tier,-1,k,new int[]{prices[tier]-1,1,0},dye).valid());
             check(!UpgradePlanLogic.match(tier,-1,k,new int[]{prices[tier]+1,1,0},dye).valid());
             check(!UpgradePlanLogic.match(tier,-1,k,new int[]{prices[tier],2,0},dye).valid());

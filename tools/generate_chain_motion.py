@@ -82,6 +82,14 @@ def sprocket(frame):
             else:
                 col = PALETTE["dark"]
             pixel(rgba, x, y, col)
+    # A unique rotating witness mark on the sprocket prevents symmetric
+    # gear teeth from making multiple frames look identical at 45-degree
+    # intervals. It also makes rotation obvious at small on-screen sizes.
+    for radius in range(10, 19):
+        x = round(cx + radius * math.cos(angle))
+        y = round(cy + radius * math.sin(angle))
+        pixel(rgba, x, y, PALETTE["silver"])
+        pixel(rgba, x + 1, y, PALETTE["light"])
     return bytes(rgba)
 
 def chunk(kind, data):

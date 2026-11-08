@@ -50,12 +50,20 @@ public final class ChainsawPlayerAnimator {
             this.player = player;
         }
 
-        private boolean ready() {
-            ItemStack stack = player.getMainHandItem();
+        private boolean mayAnimateSaw() {
+            // Release our layer IMMEDIATELY on a mainhand weapon swap,
+            // occupied offhand, death or spectating. Otherwise a four-tick
+            // fade-out could fight TaCZ gun animations after changing items.
             return player.isAlive()
-                    && stack.is(ZoneZeroChainsaw.CHAINSAW.get())
-                    && player.getOffhandItem().isEmpty()
-                    && ZoneZeroChainsaw.isEngineOn(stack)
+                    && !player.isSpectator()
+                    && player.getMainHandItem().is(ZoneZeroChainsaw.CHAINSAW.get())
+                    && player.getOffhandItem().isEmpty();
+        }
+
+        private boolean ready() {
+            if (!mayAnimateSaw()) return false;
+            ItemStack stack = player.getMainHandItem();
+            return ZoneZeroChainsaw.isEngineOn(stack)
                     && ZoneZeroChainsaw.fuel(stack) > 0;
         }
 
@@ -72,6 +80,11 @@ public final class ChainsawPlayerAnimator {
 
         @Override
         public void tick() {
+            if (!mayAnimateSaw()) {
+                oldHold = hold = 0.0f;
+                oldCut = cut = 0.0f;
+                return;
+            }
             oldHold = hold;
             oldCut = cut;
             hold = SustainedCutLogic.approach(hold, ready() ? 1.0f : 0.0f);
@@ -81,7 +94,7 @@ public final class ChainsawPlayerAnimator {
         @Override
         public boolean isActive() {
             // Allow a four-tick fade-out when R is released.
-            return ready() || hold > 0.0f || cut > 0.0f;
+            return mayAnimateSaw() && (ready() || hold > 0.0f || cut > 0.0f);
         }
 
         @Override

@@ -24,7 +24,7 @@ public final class ClientItemModels {
                         // animate as if someone were wielding the chainsaw.
                         // This also prevents stale engine NBT from running
                         // client-side before the server clears it on pickup.
-                        if (entity == null || entity.getMainHandItem() != stack
+                        if (!isMainHandSaw(stack, entity)
                                 || !entity.getOffhandItem().isEmpty()) return 0.0f;
                         net.minecraft.world.level.Level world = level != null ? level
                                 : entity.level();
@@ -40,7 +40,7 @@ public final class ClientItemModels {
                                 || ZoneZeroChainsaw.fuel(stack) <= 0
                                 || entity == null
                                 || !entity.getOffhandItem().isEmpty()
-                                || entity.getMainHandItem() != stack) return 0.0f;
+                                || !isMainHandSaw(stack, entity)) return 0.0f;
 
                         // Local input is predictive; remote players render
                         // the authoritative, replicated cutting flag.
@@ -72,7 +72,27 @@ public final class ClientItemModels {
         });
     }
 
-    private static boolean isHeld(ItemStack stack, net.minecraft.world.entity.LivingEntity entity) {
-        return entity != null && (entity.getMainHandItem() == stack || entity.getOffhandItem() == stack);
+    /**
+     * Some render pipelines supply a defensive ItemStack copy rather than the
+     * same Java object. Compare components as well as object identity, but
+     * still require this player to wield a chainsaw in the MAIN hand.
+     */
+    private static boolean isMainHandSaw(ItemStack stack,
+            net.minecraft.world.entity.LivingEntity entity) {
+        if (entity == null) return false;
+        ItemStack held = entity.getMainHandItem();
+        return held.is(ZoneZeroChainsaw.CHAINSAW.get()) &&
+                (held == stack || ItemStack.isSameItemSameComponents(held, stack));
+    }
+
+    private static boolean isHeld(ItemStack stack,
+            net.minecraft.world.entity.LivingEntity entity) {
+        if (entity == null) return false;
+        ItemStack main = entity.getMainHandItem();
+        ItemStack off = entity.getOffhandItem();
+        return (main == stack || (!main.isEmpty() &&
+                ItemStack.isSameItemSameComponents(main, stack))) ||
+               (off == stack || (!off.isEmpty() &&
+                ItemStack.isSameItemSameComponents(off, stack)));
     }
 }

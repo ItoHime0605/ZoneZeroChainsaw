@@ -1,0 +1,7 @@
+{
+  "parent": "zonezero_chainsaw:item/chainsaw_base",
+  "textures": {
+    "orange": "zonezero_chainsaw:item/housing_blue",
+    "particle": "zonezero_chainsaw:item/housing_blue"
+  }
+}

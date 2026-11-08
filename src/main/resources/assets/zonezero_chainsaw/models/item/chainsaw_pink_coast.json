@@ -1,0 +1,6 @@
+{
+  "parent": "zonezero_chainsaw:item/chainsaw_pink",
+  "textures": {
+    "chain": "zonezero_chainsaw:item/chain_coast"
+  }
+}

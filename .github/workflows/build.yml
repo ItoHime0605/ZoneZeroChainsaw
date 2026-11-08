@@ -30,6 +30,12 @@ jobs:
           java -ea -cp build/logic-test tw.zonezero.chainsaw.logic.LogicSmokeTest
       - name: Validate 3D assets and localization
         run: python3 tools/verify_assets.py
+      - name: Install audio encoder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - name: Generate original audio and chain animation
+        run: python3 tools/generate_media.py
       - name: Compile mod
         run: gradle build --stacktrace --no-daemon
       - name: Upload developer build JAR

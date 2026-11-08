@@ -18,6 +18,15 @@ public final class ClientItemModels {
         event.enqueueWork(() -> {
             ResourceLocation held = ResourceLocation.fromNamespaceAndPath(ZoneZeroChainsaw.MODID, "held");
             ItemProperties.register(ZoneZeroChainsaw.CHAINSAW.get(),
+                    ResourceLocation.fromNamespaceAndPath(ZoneZeroChainsaw.MODID, "engine"),
+                    (stack, level, entity, seed) -> {
+                        if (ZoneZeroChainsaw.isEngineOn(stack)) return 1.0F;
+                        net.minecraft.world.level.Level world = level != null ? level
+                                : entity != null ? entity.level() : null;
+                        return world != null && ZoneZeroChainsaw.coastUntil(stack) > world.getGameTime()
+                                ? 0.5F : 0.0F;
+                    });
+            ItemProperties.register(ZoneZeroChainsaw.CHAINSAW.get(),
                     ResourceLocation.fromNamespaceAndPath(ZoneZeroChainsaw.MODID, "cutting"),
                     (stack, level, entity, seed) -> {
                         if (!ZoneZeroChainsaw.isEngineOn(stack) || entity == null) return 0.0F;

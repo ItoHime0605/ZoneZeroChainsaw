@@ -32,7 +32,7 @@ public final class ZoneZeroChainsaw {
     public static final DeferredItem<BlockItem> FERMENTER_ITEM = ITEMS.registerSimpleBlockItem("fermentation_barrel", FERMENTER);
     public static final DeferredItem<BlockItem> REFINERY_ITEM = ITEMS.registerSimpleBlockItem("fuel_refinery", REFINERY);
     public static final DeferredItem<Item> CRUDE = ITEMS.registerSimpleItem("fermented_crude", new Item.Properties());
-    public static final DeferredItem<Item> FUEL = ITEMS.registerSimpleItem("biofuel_bottle", new Item.Properties().stacksTo(16));
+    public static final DeferredItem<Item> FUEL = ITEMS.register("biofuel_bottle", () -> new BiofuelCanItem(new Item.Properties().stacksTo(16)));
     public static final DeferredItem<Item> CHAINSAW = ITEMS.registerSimpleItem("chainsaw", new Item.Properties().stacksTo(1));
 
     public ZoneZeroChainsaw(IEventBus bus) {

@@ -20,8 +20,14 @@ public final class ClientItemModels {
             ItemProperties.register(ZoneZeroChainsaw.CHAINSAW.get(),
                     ResourceLocation.fromNamespaceAndPath(ZoneZeroChainsaw.MODID, "engine"),
                     (stack, level, entity, seed) -> {
+                        // Inventory, dropped-item and GUI previews MUST never
+                        // animate as if someone were wielding the chainsaw.
+                        // This also prevents stale engine NBT from running
+                        // client-side before the server clears it on pickup.
+                        if (entity == null || entity.getMainHandItem() != stack
+                                || !entity.getOffhandItem().isEmpty()) return 0.0f;
                         net.minecraft.world.level.Level world = level != null ? level
-                                : entity != null ? entity.level() : null;
+                                : entity.level();
                         return tw.zonezero.chainsaw.logic.ChainMotion.engineModel(
                                 ZoneZeroChainsaw.isEngineOn(stack),
                                 ZoneZeroChainsaw.coastUntil(stack),

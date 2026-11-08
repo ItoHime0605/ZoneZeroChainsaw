@@ -17,6 +17,22 @@ public final class ClientItemModels {
     public static void setup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             ResourceLocation held = ResourceLocation.fromNamespaceAndPath(ZoneZeroChainsaw.MODID, "held");
+            ItemProperties.register(ZoneZeroChainsaw.CHAINSAW.get(),
+                    ResourceLocation.fromNamespaceAndPath(ZoneZeroChainsaw.MODID, "cutting"),
+                    (stack, level, entity, seed) -> {
+                        if (!ZoneZeroChainsaw.isEngineOn(stack) || entity == null) return 0.0F;
+                        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+                        if (mc.player == entity && mc.screen == null
+                                && entity.getMainHandItem() == stack
+                                && mc.options.keyAttack.isDown()) return 1.0F;
+                        if (level == null) return 0.0F;
+                        long last = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                                net.minecraft.world.item.component.CustomData.EMPTY)
+                                .copyTag().getLong("ChainsawCuttingAt");
+                        return last > 0 && level.getGameTime() - last <= 6
+                                && level.getGameTime() >= last ? 1.0F : 0.0F;
+                    });
+
             // Minecraft 1.21.1 uses predicate-based model overrides. The
             // undyed saw stays orange (0); each DyeColor ID occupies one
             // exact step in the range 1/16 through 16/16.

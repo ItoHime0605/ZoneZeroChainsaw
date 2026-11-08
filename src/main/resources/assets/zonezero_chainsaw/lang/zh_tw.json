@@ -21,5 +21,7 @@
   "tooltip.zonezero_chainsaw.refuel": "補油：另一手拿燃油瓶，對著空氣按右鍵。",
   "message.zonezero_chainsaw.engine_on": "電鋸引擎啟動",
   "message.zonezero_chainsaw.engine_off": "電鋸引擎熄火",
-  "message.zonezero_chainsaw.empty": "燃油耗盡，電鋸已熄火。"
+  "message.zonezero_chainsaw.empty": "燃油耗盡，電鋸已熄火。",
+  "hud.zonezero_chainsaw.title": "動力電鋸 Lv.%s",
+  "hud.zonezero_chainsaw.fuel": "燃油 %s / %s"
 }

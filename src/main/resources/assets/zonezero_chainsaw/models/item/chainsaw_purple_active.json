@@ -1,0 +1,73 @@
+{
+  "parent": "zonezero_chainsaw:item/chainsaw_purple",
+  "display": {
+    "firstperson_righthand": {
+      "rotation": [
+        -6,
+        -43,
+        -6
+      ],
+      "translation": [
+        -0.2,
+        -3.1,
+        -4.2
+      ],
+      "scale": [
+        0.46,
+        0.46,
+        0.46
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        -6,
+        43,
+        6
+      ],
+      "translation": [
+        0.2,
+        -3.1,
+        -4.2
+      ],
+      "scale": [
+        0.46,
+        0.46,
+        0.46
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        -2,
+        -85,
+        12
+      ],
+      "translation": [
+        0.6,
+        1.5,
+        -1.6
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        -2,
+        85,
+        -12
+      ],
+      "translation": [
+        -0.6,
+        1.5,
+        -1.6
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    }
+  }
+}

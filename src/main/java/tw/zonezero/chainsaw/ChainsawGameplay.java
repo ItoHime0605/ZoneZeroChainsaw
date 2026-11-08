@@ -94,6 +94,9 @@ public final class ChainsawGameplay {
         if (++input.heldTicks < 4) return;
         input.heldTicks = 0;
         ZoneZeroChainsaw.setFuel(saw, ZoneZeroChainsaw.fuel(saw) - 1);
+        net.minecraft.world.item.component.CustomData.update(
+                net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                saw, tag -> tag.putLong("ChainsawCuttingAt", tick));
         LivingEntity target = findTarget(player);
         if (target != null) {
             float damage = ZoneZeroChainsaw.damagePerHit(saw);

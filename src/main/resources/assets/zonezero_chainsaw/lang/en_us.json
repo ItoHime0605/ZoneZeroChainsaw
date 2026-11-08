@@ -19,5 +19,7 @@
   "tooltip.zonezero_chainsaw.refuel": "Refuel: fuel can in opposite hand, right-click air.",
   "message.zonezero_chainsaw.engine_on": "Chainsaw engine started",
   "message.zonezero_chainsaw.engine_off": "Chainsaw engine stopped",
-  "message.zonezero_chainsaw.empty": "Fuel exhausted; engine stopped."
+  "message.zonezero_chainsaw.empty": "Fuel exhausted; engine stopped.",
+  "hud.zonezero_chainsaw.title": "Chainsaw Lv.%s",
+  "hud.zonezero_chainsaw.fuel": "Fuel %s / %s"
 }

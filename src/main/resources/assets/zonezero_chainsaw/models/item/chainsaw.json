@@ -3,9 +3,22 @@
   "overrides": [
     {
       "predicate": {
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_active"
+    },
+    {
+      "predicate": {
         "zonezero_chainsaw:dye_color": 0.0625
       },
       "model": "zonezero_chainsaw:item/chainsaw_white"
+    },
+    {
+      "predicate": {
+        "zonezero_chainsaw:dye_color": 0.0625,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_white_active"
     },
     {
       "predicate": {
@@ -15,9 +28,23 @@
     },
     {
       "predicate": {
+        "zonezero_chainsaw:dye_color": 0.125,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_orange_active"
+    },
+    {
+      "predicate": {
         "zonezero_chainsaw:dye_color": 0.1875
       },
       "model": "zonezero_chainsaw:item/chainsaw_magenta"
+    },
+    {
+      "predicate": {
+        "zonezero_chainsaw:dye_color": 0.1875,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_magenta_active"
     },
     {
       "predicate": {
@@ -27,9 +54,23 @@
     },
     {
       "predicate": {
+        "zonezero_chainsaw:dye_color": 0.25,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_light_blue_active"
+    },
+    {
+      "predicate": {
         "zonezero_chainsaw:dye_color": 0.3125
       },
       "model": "zonezero_chainsaw:item/chainsaw_yellow"
+    },
+    {
+      "predicate": {
+        "zonezero_chainsaw:dye_color": 0.3125,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_yellow_active"
     },
     {
       "predicate": {
@@ -39,9 +80,23 @@
     },
     {
       "predicate": {
+        "zonezero_chainsaw:dye_color": 0.375,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_lime_active"
+    },
+    {
+      "predicate": {
         "zonezero_chainsaw:dye_color": 0.4375
       },
       "model": "zonezero_chainsaw:item/chainsaw_pink"
+    },
+    {
+      "predicate": {
+        "zonezero_chainsaw:dye_color": 0.4375,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_pink_active"
     },
     {
       "predicate": {
@@ -51,9 +106,23 @@
     },
     {
       "predicate": {
+        "zonezero_chainsaw:dye_color": 0.5,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_gray_active"
+    },
+    {
+      "predicate": {
         "zonezero_chainsaw:dye_color": 0.5625
       },
       "model": "zonezero_chainsaw:item/chainsaw_light_gray"
+    },
+    {
+      "predicate": {
+        "zonezero_chainsaw:dye_color": 0.5625,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_light_gray_active"
     },
     {
       "predicate": {
@@ -63,9 +132,23 @@
     },
     {
       "predicate": {
+        "zonezero_chainsaw:dye_color": 0.625,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_cyan_active"
+    },
+    {
+      "predicate": {
         "zonezero_chainsaw:dye_color": 0.6875
       },
       "model": "zonezero_chainsaw:item/chainsaw_purple"
+    },
+    {
+      "predicate": {
+        "zonezero_chainsaw:dye_color": 0.6875,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_purple_active"
     },
     {
       "predicate": {
@@ -75,9 +158,23 @@
     },
     {
       "predicate": {
+        "zonezero_chainsaw:dye_color": 0.75,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_blue_active"
+    },
+    {
+      "predicate": {
         "zonezero_chainsaw:dye_color": 0.8125
       },
       "model": "zonezero_chainsaw:item/chainsaw_brown"
+    },
+    {
+      "predicate": {
+        "zonezero_chainsaw:dye_color": 0.8125,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_brown_active"
     },
     {
       "predicate": {
@@ -87,15 +184,36 @@
     },
     {
       "predicate": {
+        "zonezero_chainsaw:dye_color": 0.875,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_green_active"
+    },
+    {
+      "predicate": {
         "zonezero_chainsaw:dye_color": 0.9375
       },
       "model": "zonezero_chainsaw:item/chainsaw_red"
     },
     {
       "predicate": {
+        "zonezero_chainsaw:dye_color": 0.9375,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_red_active"
+    },
+    {
+      "predicate": {
         "zonezero_chainsaw:dye_color": 1
       },
       "model": "zonezero_chainsaw:item/chainsaw_black"
+    },
+    {
+      "predicate": {
+        "zonezero_chainsaw:dye_color": 1,
+        "zonezero_chainsaw:cutting": 1
+      },
+      "model": "zonezero_chainsaw:item/chainsaw_black_active"
     }
   ]
 }

@@ -142,6 +142,57 @@ public final class LogicSmokeTest {
         check(ChainsawAudioTiming.ENGINE_INTERVAL == 12);
         check(ChainsawAudioTiming.CUT_INTERVAL == 8);
         check(ChainsawAudioTiming.CONTACT_COOLDOWN == 6);
+        // Refueling consumes exactly one 600-unit sealed can and is
+        // rejected when the engine runs, a hand is wrong, or the tank lacks
+        // room for a full can. Never grant fuel partially or for free.
+        for (int capacity : new int[] {600, 1200, 1800, 2400, 3000}) {
+            check(ChainsawSafetyRules.canRefuel(true, true, false,
+                    0, capacity, 1));
+            check(ChainsawSafetyRules.refilledFuel(0, capacity) == 600);
+            check(ChainsawSafetyRules.canRefuel(true, true, false,
+                    capacity - 600, capacity, 1));
+            check(ChainsawSafetyRules.refilledFuel(capacity - 600, capacity) == capacity);
+            check(!ChainsawSafetyRules.canRefuel(true, true, false,
+                    capacity - 599, capacity, 1));
+            check(ChainsawSafetyRules.refilledFuel(capacity - 599, capacity) == capacity - 599);
+            check(!ChainsawSafetyRules.canRefuel(true, true, true,
+                    0, capacity, 1));
+            check(!ChainsawSafetyRules.canRefuel(true, true, false,
+                    0, capacity, 0));
+            check(!ChainsawSafetyRules.canRefuel(false, true, false,
+                    0, capacity, 1));
+            check(!ChainsawSafetyRules.canRefuel(true, false, false,
+                    0, capacity, 1));
+        }
+        check(!ChainsawSafetyRules.canRefuel(true, true, false, -1, 600, 1));
+        check(!ChainsawSafetyRules.canRefuel(true, true, false, 601, 600, 1));
+        check(ChainsawSafetyRules.refilledFuel(100, 500) == 100);
+        check(ChainsawSafetyRules.canStart(true, 1, true, false));
+        check(!ChainsawSafetyRules.canStart(false, 1, true, false));
+        check(!ChainsawSafetyRules.canStart(true, 0, true, false));
+        check(!ChainsawSafetyRules.canStart(true, 1, false, false));
+        check(!ChainsawSafetyRules.canStart(true, 1, true, true));
+        check(ChainsawSafetyRules.mustStop(false, true, false, true));
+        check(ChainsawSafetyRules.mustStop(true, false, false, true));
+        check(ChainsawSafetyRules.mustStop(true, true, true, true));
+        check(ChainsawSafetyRules.mustStop(true, true, false, false));
+        check(!ChainsawSafetyRules.mustStop(true, true, false, true));
+        check(ChainsawSafetyRules.toggleAllowed(100, -1000));
+        check(!ChainsawSafetyRules.toggleAllowed(100, 100));
+        check(!ChainsawSafetyRules.toggleAllowed(101, 100));
+        check(!ChainsawSafetyRules.toggleAllowed(103, 100));
+        check(ChainsawSafetyRules.toggleAllowed(104, 100));
+        check(!ChainsawSafetyRules.toggleAllowed(99, 100));
+        check(!ChainsawSafetyRules.toggleAllowed(-1, -1000));
+        // Long holding requires exactly one unit per four world ticks,
+        // even after repeated input packets. Engine idle never uses fuel.
+        int units = 0;
+        for (int tick = 1; tick <= 1200; tick++)
+            if (SustainedCutLogic.shouldCut(tick, tick-4, true, true, 600)
+                    && SustainedCutLogic.consumeUnit(tick)) units++;
+        check(units == 300);
+        check(!SustainedCutLogic.shouldCut(500, 490, true, true, 600));
+        check(!SustainedCutLogic.shouldCut(500, 499, true, false, 600));
         // The HUD uses one fixed ivory-white text color, independent from
         // the engine. Only the two original guide-bar sprites change.
         check(ChainsawHudStyle.TEXT_COLOR == 0xfff0f4f2);

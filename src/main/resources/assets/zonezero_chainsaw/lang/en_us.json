@@ -21,5 +21,8 @@
   "message.zonezero_chainsaw.engine_off": "Chainsaw engine stopped",
   "message.zonezero_chainsaw.empty": "Fuel exhausted; engine stopped.",
   "hud.zonezero_chainsaw.title": "Chainsaw Lv.%s",
-  "hud.zonezero_chainsaw.fuel": "Fuel %s / %s"
+  "hud.zonezero_chainsaw.fuel": "Fuel %s / %s",
+  "message.zonezero_chainsaw.offhand_required": "Free your offhand before you can wield the chainsaw.",
+  "message.zonezero_chainsaw.offhand_interrupt": "Offhand occupied; chainsaw engine stopped.",
+  "tooltip.zonezero_chainsaw.offhand": "Two-handed tool: free your offhand to wield and operate."
 }

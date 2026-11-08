@@ -46,6 +46,16 @@ public final class ChainsawGameplay {
         input.lastSaw = saw;
         if (action == 1) {
             boolean next = !ZoneZeroChainsaw.isEngineOn(saw);
+            // Both hands are mandatory. A fuel can in the offhand can be used
+            // for refilling only while the engine is stopped.
+            if (next && !player.getOffhandItem().isEmpty()) {
+                player.displayClientMessage(
+                        Component.translatable("message.zonezero_chainsaw.offhand_required")
+                                .withStyle(ChatFormatting.RED), true);
+                input.heldTicks = 0;
+                input.lastHeldTick = -1000;
+                return;
+            }
             if (next && ZoneZeroChainsaw.fuel(saw) <= 0) {
                 player.displayClientMessage(Component.translatable("message.zonezero_chainsaw.no_fuel")
                         .withStyle(ChatFormatting.RED), true);
@@ -66,7 +76,12 @@ public final class ChainsawGameplay {
             player.displayClientMessage(Component.translatable(next
                     ? "message.zonezero_chainsaw.engine_on" : "message.zonezero_chainsaw.engine_off"), true);
         } else if (action == 2) {
-            input.lastHeldTick = player.level().getGameTime();
+            if (player.getOffhandItem().isEmpty() && ZoneZeroChainsaw.isEngineOn(saw)) {
+                input.lastHeldTick = player.level().getGameTime();
+            } else {
+                input.heldTicks = 0;
+                input.lastHeldTick = -1000;
+            }
         } else {
             input.lastHeldTick = -1000;
             input.heldTicks = 0;
@@ -85,6 +100,23 @@ public final class ChainsawGameplay {
                 ZoneZeroChainsaw.setEngineOn(input.lastSaw, false);
             }
             INPUTS.remove(id);
+            return;
+        }
+        // The left hand must remain empty throughout the entire session, not
+        // merely when the engine starts. Never eject or move inventory items.
+        if (!player.getOffhandItem().isEmpty()) {
+            if (ZoneZeroChainsaw.isEngineOn(saw)) {
+                ZoneZeroChainsaw.setEngineOn(saw, false);
+                ZoneZeroChainsaw.setCoastUntil(saw, player.level().getGameTime() + 40);
+                player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                        ZoneZeroChainsaw.SOUND_STOP.get(),
+                        net.minecraft.sounds.SoundSource.PLAYERS, 0.7f, 1.0f);
+                player.displayClientMessage(
+                        Component.translatable("message.zonezero_chainsaw.offhand_interrupt")
+                                .withStyle(ChatFormatting.RED), true);
+            }
+            input.heldTicks = 0;
+            input.lastHeldTick = -1000;
             return;
         }
         if (!ZoneZeroChainsaw.isEngineOn(saw)) {

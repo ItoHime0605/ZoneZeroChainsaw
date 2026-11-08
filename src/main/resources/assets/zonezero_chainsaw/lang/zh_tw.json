@@ -23,5 +23,8 @@
   "message.zonezero_chainsaw.engine_off": "電鋸引擎熄火",
   "message.zonezero_chainsaw.empty": "燃油耗盡，電鋸已熄火。",
   "hud.zonezero_chainsaw.title": "動力電鋸 Lv.%s",
-  "hud.zonezero_chainsaw.fuel": "燃油 %s / %s"
+  "hud.zonezero_chainsaw.fuel": "燃油 %s / %s",
+  "message.zonezero_chainsaw.offhand_required": "左手必須空出，才能拿得動電鋸。",
+  "message.zonezero_chainsaw.offhand_interrupt": "左手拿了其他東西，電鋸已熄火。",
+  "tooltip.zonezero_chainsaw.offhand": "雙手工具：左手空出才能持握、啟動與切割。"
 }

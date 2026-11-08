@@ -29,6 +29,7 @@ public final class ChainsawItem extends Item {
                     ? Component.translatable("tooltip.zonezero_chainsaw.engine_on")
                     : Component.translatable("tooltip.zonezero_chainsaw.engine_off"))
                 .withStyle(ZoneZeroChainsaw.isEngineOn(stack) ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.translatable("tooltip.zonezero_chainsaw.offhand").withStyle(ChatFormatting.GOLD));
         tooltip.add(Component.translatable("tooltip.zonezero_chainsaw.controls").withStyle(ChatFormatting.YELLOW));
         tooltip.add(Component.translatable("tooltip.zonezero_chainsaw.refuel").withStyle(ChatFormatting.GRAY));
     }

@@ -5,7 +5,6 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.DyeItem;
@@ -21,9 +20,17 @@ public final class ChainsawUpgradeMenu extends AbstractContainerMenu {
     };
     private final Container output = new SimpleContainer(1);
     private boolean updating;
+    private final net.minecraft.world.level.Level level;
+    private final net.minecraft.core.BlockPos stationPos;
 
     public ChainsawUpgradeMenu(int id, Inventory inventory) {
+        this(id, inventory, inventory.player.blockPosition());
+    }
+
+    public ChainsawUpgradeMenu(int id, Inventory inventory, net.minecraft.core.BlockPos pos) {
         super(ZoneZeroChainsaw.UPGRADE_MENU.get(), id);
+        level = inventory.player.level();
+        stationPos = pos;
         addSlot(new Slot(input, 0, 25, 36) {
             @Override public boolean mayPlace(ItemStack stack) { return stack.is(ZoneZeroChainsaw.CHAINSAW.get()); }
             @Override public int getMaxStackSize() { return 1; }
@@ -31,7 +38,9 @@ public final class ChainsawUpgradeMenu extends AbstractContainerMenu {
         for (int i = 0; i < 3; i++) addSlot(new Slot(input, i + 1, 70 + 18 * i, 36));
         addSlot(new Slot(output, 0, 150, 36) {
             @Override public boolean mayPlace(ItemStack stack) { return false; }
-            @Override public boolean mayPickup(Player player) { return !getItem().isEmpty(); }
+            @Override public boolean mayPickup(Player player) { return !getItem().isEmpty()
+                && ItemStack.isSameItemSameComponents(getItem(),
+                    ChainsawUpgradeRules.preview(input.getItem(0), materials())); }
             @Override public void onTake(Player player, ItemStack stack) {
                 super.onTake(player, stack);
                 consumeInputs();
@@ -78,7 +87,22 @@ public final class ChainsawUpgradeMenu extends AbstractContainerMenu {
         updateOutput();
     }
 
-    @Override public boolean stillValid(Player player) { return true; }
+    public int nextTier() { return ChainsawUpgradeRules.resultingTier(input.getItem(0)); }
+    public boolean isDye() { return ChainsawUpgradeRules.isDyeOperation(materials()); }
+    public int nextFuelCapacity() {
+        int tier = nextTier();
+        return tier < 0 || tier > 5 ? 0 : Math.min(3000, (tier + 1) * 600);
+    }
+    public int nextDamage() {
+        int tier = nextTier();
+        return tier < 0 || tier > 5 ? 0 : new int[] {2,3,4,6,8,10}[tier];
+    }
+
+    @Override public boolean stillValid(Player player) {
+        return player.level() == level
+            && level.getBlockState(stationPos).is(ZoneZeroChainsaw.UPGRADE_STATION.get())
+            && player.distanceToSqr(stationPos.getX() + .5, stationPos.getY() + .5, stationPos.getZ() + .5) <= 64;
+    }
 
     @Override public void removed(Player player) {
         super.removed(player);

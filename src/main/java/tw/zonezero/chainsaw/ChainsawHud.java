@@ -2,7 +2,6 @@ package tw.zonezero.chainsaw;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -10,14 +9,17 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 /**
- * TaCZ-compatible placement, but fully independent rendering.
- * TaCZ's ammo overlay is for IGun equipment; the chainsaw is NOT a gun.
- * Its own compact weapon-status widget appears only while a saw is held.
- * All graphics are original primitives: no TACZ UI assets are copied.
+ * Original compact pixel guide-bar gauge.
+ * Off: cool grey. Running: red. Fuel value only: e.g. 300/600.
+ * No text panels, TaCZ resource copies, or extra status banners.
  */
 @EventBusSubscriber(modid = ZoneZeroChainsaw.MODID, value = Dist.CLIENT)
 public final class ChainsawHud {
     private ChainsawHud() {}
+
+    private static void stroke(GuiGraphics g, int x, int y, int w, int h, int color) {
+        g.fill(x, y, x + w, y + h, color);
+    }
 
     @SubscribeEvent
     public static void afterHud(RenderGuiEvent.Post event) {
@@ -25,61 +27,52 @@ public final class ChainsawHud {
         if (mc.player == null || mc.screen != null || mc.options.hideGui || mc.player.isSpectator()) return;
         ItemStack saw = mc.player.getMainHandItem();
         if (!saw.is(ZoneZeroChainsaw.CHAINSAW.get())) return;
-
         GuiGraphics g = event.getGuiGraphics();
-        int fuel = ZoneZeroChainsaw.fuel(saw);
-        int max = Math.max(1, ZoneZeroChainsaw.fuelCapacity(saw));
-        int tier = ZoneZeroChainsaw.tier(saw);
-        boolean needsOffhand = !mc.player.getOffhandItem().isEmpty();
-        boolean on = !needsOffhand && ZoneZeroChainsaw.isEngineOn(saw);
+        int x = g.guiWidth() - 157;
+        int y = g.guiHeight() - 52;
+        if (x < 3 || y < 3) return;
 
-        // Mirrors the location and visual hierarchy of a tactical firearm
-        // ammo widget without touching TaCZ's overlay or player renderer.
-        int w = 176;
-        int h = 64;
-        int x = g.guiWidth() - w - 8;
-        int y = g.guiHeight() - h - 32;
-        if (x < 2 || y < 2) return;
+        boolean running = ZoneZeroChainsaw.isEngineOn(saw) && mc.player.getOffhandItem().isEmpty();
+        int edge = running ? 0xffed4847 : 0xffc1c9ca;
+        int highlight = running ? 0xffff8b7c : 0xffecf0e8;
+        int shade = running ? 0xff922826 : 0xff657277;
 
-        g.fill(x, y, x + w, y + h, 0xc71a2028);
-        g.fill(x + 1, y + 1, x + w - 1, y + 3, on ? 0xffe2a047 : 0xff727b84);
-        g.fill(x + 1, y + 45, x + w - 1, y + 46, 0x98717a80);
-        g.fill(x + 124, y + 7, x + 125, y + 43, 0x99717b84);
+        // Light shadow to keep thin guide-bar lines visible over day or night.
+        stroke(g, x + 5, y + 6, 82, 23, 0x440e1316);
 
-        // Left: fuel capacity, analogous to ammunition count.
-        g.drawString(mc.font,
-                Component.translatable("hud.zonezero_chainsaw.compact_title", tier),
-                x + 8, y + 8, 0xffdce4e5, false);
-        g.drawString(mc.font, Integer.toString(fuel), x + 8, y + 21,
-                fuel * 5 <= max ? 0xffe96860 : 0xfff4f2e9, false);
-        g.drawString(mc.font, "/" + max, x + 8 + mc.font.width(Integer.toString(fuel)) + 4,
-                y + 23, 0xff9aaab0, false);
+        // Outer saw bar: a flat-sided, pixel-chamfered nose pointing left.
+        stroke(g, x + 12, y + 4, 75, 3, edge);
+        stroke(g, x + 7, y + 7, 5, 3, edge);
+        stroke(g, x + 4, y + 10, 3, 13, edge);
+        stroke(g, x + 7, y + 23, 5, 3, edge);
+        stroke(g, x + 12, y + 26, 75, 3, edge);
+        stroke(g, x + 84, y + 7, 3, 19, shade);
 
-        int barX = x + 8;
-        int barY = y + 37;
-        int barLength = 106;
-        int filled = (int) (barLength * (long) fuel / max);
-        g.fill(barX, barY, barX + barLength, barY + 5, 0xff424b53);
-        if (filled > 0) {
-            int c = fuel * 5 <= max ? 0xffdf645a : on ? 0xffe4b367 : 0xff92c6b5;
-            g.fill(barX, barY, barX + filled, barY + 5, c);
+        // Distinct recessed center of the guide bar, not a fuel progress bar.
+        stroke(g, x + 22, y + 11, 61, 2, highlight);
+        stroke(g, x + 16, y + 13, 6, 3, highlight);
+        stroke(g, x + 14, y + 16, 3, 3, shade);
+        stroke(g, x + 16, y + 19, 6, 3, shade);
+        stroke(g, x + 22, y + 22, 61, 2, shade);
+        stroke(g, x + 82, y + 13, 2, 9, shade);
+
+        // Seven tiny teeth on each longitudinal side, plus sprocket teeth at the nose.
+        for (int i = 0; i < 7; i++) {
+            int tx = x + 15 + i * 10;
+            stroke(g, tx, y + 1, 3, 3, i % 2 == 0 ? shade : edge);
+            stroke(g, tx + 2, y + 29, 3, 3, i % 2 == 0 ? edge : shade);
         }
+        stroke(g, x + 1, y + 12, 3, 4, edge);
+        stroke(g, x + 1, y + 19, 3, 4, shade);
 
-        // Right: persistent engine readout. Invalid two-hand use is explicit.
-        int c = needsOffhand ? 0xffed7770 : on ? 0xffeec479 : 0xffa9b4b8;
-        String key = needsOffhand
-                ? "hud.zonezero_chainsaw.blocked"
-                : on ? "hud.zonezero_chainsaw.running" : "hud.zonezero_chainsaw.stopped";
-        g.drawString(mc.font, Component.translatable(key), x + 131, y + 14, c, false);
-        g.drawString(mc.font, Component.translatable("hud.zonezero_chainsaw.unit"),
-                x + 131, y + 29, 0xff8e9ba2, false);
-
-        // Bottom strip is concise and never requires TaCZ or gun ammo state.
-        String footer = needsOffhand
-                ? "hud.zonezero_chainsaw.free_hand"
-                : on ? "hud.zonezero_chainsaw.hold_cut"
-                : "hud.zonezero_chainsaw.press_r";
-        g.drawString(mc.font, Component.translatable(footer),
-                x + 8, y + 51, needsOffhand ? 0xffed7770 : 0xffaab7ba, false);
+        // Single numerical readout. It follows the real ItemStack tank capacity.
+        int fuel = ZoneZeroChainsaw.fuel(saw);
+        int max = ZoneZeroChainsaw.fuelCapacity(saw);
+        String counter = fuel + "/" + max;
+        g.pose().pushPose();
+        g.pose().translate(x + 94, y + 12, 0);
+        g.pose().scale(1.08f, 1.08f, 1.0f);
+        g.drawString(mc.font, counter, 0, 0, running ? 0xffffdddd : 0xfff1f2ee, true);
+        g.pose().popPose();
     }
 }

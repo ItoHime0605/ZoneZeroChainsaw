@@ -34,6 +34,8 @@ jobs:
           sudo apt-get install -y ffmpeg
       - name: Generate original audio, 29 machine material textures, HUD and chain motion
         run: python3 tools/generate_media.py
+      - name: Validate original fermenter and upgrade-station models
+        run: python3 tools/verify_machine_models.py
       - name: Verify fuel and held-cut server safety regressions
         run: python3 tools/verify_safety.py
       - name: Verify upgrade-station recipe and transaction safety

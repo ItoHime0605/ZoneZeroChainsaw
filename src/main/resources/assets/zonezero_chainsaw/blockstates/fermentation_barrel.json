@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "zonezero_chainsaw:block/fermentation_barrel"
+    },
+    "facing=east": {
+      "model": "zonezero_chainsaw:block/fermentation_barrel",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "zonezero_chainsaw:block/fermentation_barrel",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "zonezero_chainsaw:block/fermentation_barrel",
+      "y": 270
+    }
+  }
+}

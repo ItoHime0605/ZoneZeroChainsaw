@@ -3,7 +3,7 @@ loaderVersion="[4,)"
 license="All Rights Reserved"
 [[mods]]
 modId="zonezero_chainsaw"
-version="0.1.1-alpha"
+version="0.1.2-alpha"
 displayName="Zone Zero Chainsaw"
 description='''Animated chainsaw and biofuel processing for Zone Zero.'''
 [[dependencies.zonezero_chainsaw]]

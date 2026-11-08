@@ -5,5 +5,8 @@
   "block.zonezero_chainsaw.fermentation_barrel": "發酵桶",
   "block.zonezero_chainsaw.fuel_refinery": "燃油精製台",
   "key.zonezero_chainsaw.toggle_engine": "啟動／關閉電鋸引擎",
-  "message.zonezero_chainsaw.no_fuel": "燃料不足，無法啟動電鋸。"
+  "message.zonezero_chainsaw.no_fuel": "燃料不足，無法啟動電鋸。",
+  "itemGroup.zonezero_chainsaw": "零號禁區｜動力電鋸",
+  "block.zonezero_chainsaw.chainsaw_upgrade_station": "電鋸升級檯",
+  "container.zonezero_chainsaw.chainsaw_upgrade": "電鋸升級檯"
 }

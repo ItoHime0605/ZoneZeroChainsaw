@@ -3,5 +3,8 @@
   "item.zonezero_chainsaw.fermented_crude": "Fermented Crude",
   "item.zonezero_chainsaw.biofuel_bottle": "Biofuel Bottle",
   "block.zonezero_chainsaw.fermentation_barrel": "Fermentation Barrel",
-  "block.zonezero_chainsaw.fuel_refinery": "Fuel Refinery"
+  "block.zonezero_chainsaw.fuel_refinery": "Fuel Refinery",
+  "itemGroup.zonezero_chainsaw": "Zone Zero | Chainsaws",
+  "block.zonezero_chainsaw.chainsaw_upgrade_station": "Chainsaw Upgrade Station",
+  "container.zonezero_chainsaw.chainsaw_upgrade": "Chainsaw Upgrade Station"
 }

@@ -6,7 +6,6 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -48,6 +47,7 @@ public final class ZoneZeroChainsaw {
         BLOCKS.register(bus);
         MENUS.register(bus);
         ITEMS.register(bus);
+        ChainsawCreativeTabs.TABS.register(bus);
     }
 
     public static int tier(ItemStack stack) {

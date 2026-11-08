@@ -20,11 +20,12 @@ public final class ClientItemModels {
             ItemProperties.register(ZoneZeroChainsaw.CHAINSAW.get(),
                     ResourceLocation.fromNamespaceAndPath(ZoneZeroChainsaw.MODID, "engine"),
                     (stack, level, entity, seed) -> {
-                        if (ZoneZeroChainsaw.isEngineOn(stack)) return 1.0F;
                         net.minecraft.world.level.Level world = level != null ? level
                                 : entity != null ? entity.level() : null;
-                        return world != null && ZoneZeroChainsaw.coastUntil(stack) > world.getGameTime()
-                                ? 0.5F : 0.0F;
+                        return tw.zonezero.chainsaw.logic.ChainMotion.engineModel(
+                                ZoneZeroChainsaw.isEngineOn(stack),
+                                ZoneZeroChainsaw.coastUntil(stack),
+                                world == null ? -1L : world.getGameTime());
                     });
             ItemProperties.register(ZoneZeroChainsaw.CHAINSAW.get(),
                     ResourceLocation.fromNamespaceAndPath(ZoneZeroChainsaw.MODID, "cutting"),

@@ -1,6 +1,7 @@
 {
-  "parent": "zonezero_chainsaw:item/chainsaw_magenta_active",
+  "parent": "zonezero_chainsaw:item/chainsaw_cutting",
   "textures": {
-    "chain": "zonezero_chainsaw:item/chain_running"
+    "orange": "zonezero_chainsaw:item/housing_magenta",
+    "particle": "zonezero_chainsaw:item/housing_magenta"
   }
 }

@@ -1,6 +1,8 @@
 {
   "parent": "zonezero_chainsaw:item/chainsaw_active",
   "textures": {
-    "chain": "zonezero_chainsaw:item/chain_running"
+    "chain": "zonezero_chainsaw:item/chain_running",
+    "chain_reverse": "zonezero_chainsaw:item/chain_reverse_running",
+    "chain_nose": "zonezero_chainsaw:item/chain_nose_running"
   }
 }

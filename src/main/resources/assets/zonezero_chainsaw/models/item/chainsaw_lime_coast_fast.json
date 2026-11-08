@@ -1,0 +1,7 @@
+{
+  "parent": "zonezero_chainsaw:item/chainsaw_coast_fast",
+  "textures": {
+    "orange": "zonezero_chainsaw:item/housing_lime",
+    "particle": "zonezero_chainsaw:item/housing_lime"
+  }
+}

@@ -1,76 +1,7 @@
 {
-  "parent": "zonezero_chainsaw:item/chainsaw_red",
+  "parent": "zonezero_chainsaw:item/chainsaw_running",
   "textures": {
-    "chain": "zonezero_chainsaw:item/chain_running"
-  },
-  "display": {
-    "firstperson_righthand": {
-      "rotation": [
-        8,
-        -65,
-        -5
-      ],
-      "translation": [
-        -4.3,
-        4,
-        -0.9
-      ],
-      "scale": [
-        0.61,
-        0.61,
-        0.61
-      ]
-    },
-    "firstperson_lefthand": {
-      "rotation": [
-        8,
-        65,
-        5
-      ],
-      "translation": [
-        4.3,
-        4,
-        -0.9
-      ],
-      "scale": [
-        0.61,
-        0.61,
-        0.61
-      ]
-    },
-    "thirdperson_righthand": {
-      "rotation": [
-        0,
-        -90,
-        0
-      ],
-      "translation": [
-        0.18,
-        0.78,
-        -4.6
-      ],
-      "scale": [
-        0.59,
-        0.59,
-        0.59
-      ]
-    },
-    "thirdperson_lefthand": {
-      "rotation": [
-        0,
-        90,
-        0
-      ],
-      "translation": [
-        -0.18,
-        0.78,
-        -4.6
-      ],
-      "scale": [
-        0.59,
-        0.59,
-        0.59
-      ]
-    }
+    "orange": "zonezero_chainsaw:item/housing_red",
+    "particle": "zonezero_chainsaw:item/housing_red"
   }
 }

@@ -21,7 +21,10 @@ public final class ChainsawUpgradeRules {
     private static final String[][] MATERIAL_IDS = {
         {"minecraft:iron_block"},
         {"minecraft:iron_block"},
-        {"zombie_extreme:titanbar", "zombie_extreme:titan_ingot"},
+        // Zombie Extreme 0.2.6.5 publishes this misspelled registry ID:
+        // "ignot_titan". Older or customized packs can keep aliases.
+        {"zombie_extreme:ignot_titan", "zombie_extreme:titanbar",
+         "zombie_extreme:titan_ingot"},
         {"zombie_extreme:metalblock", "zombie_extreme:metal_block"},
         {"minecraft:diamond_block"},
         {"minecraft:netherite_block"}
